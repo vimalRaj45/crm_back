@@ -132,39 +132,110 @@
         .stat-value.amber  { color: var(--amber); }
 
         /* ── Filters ────────────────── */
-        .filter-bar {
-            display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
-        }
-        .filter-bar input, .filter-bar select {
-            padding: 11px 14px; font-size: 14px;
+        .filter-panel {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+        .filter-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-label {
+            font-size: 10px; font-weight: 600; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: .5px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .filter-panel input, .filter-panel select {
+            padding: 10px 12px; font-size: 13px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
             color: var(--text);
             font-family: inherit;
             outline: none;
             transition: border-color .2s, box-shadow .2s;
-            min-width: 0;
+            width: 100%;
         }
-        .filter-bar input:focus, .filter-bar select:focus {
+        .filter-panel input:focus, .filter-panel select:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
-        .filter-bar input::placeholder { color: rgba(255,255,255,.15); }
-        .filter-bar select option { background: #1a1a2e; color: var(--text); }
-        .search-input { flex: 2; min-width: 180px; }
-        .filter-select { flex: 1; min-width: 140px; }
-        .filter-value { flex: 1; min-width: 140px; }
+        .filter-panel input::placeholder { color: var(--text-dim); opacity: .5; }
+        .filter-panel select option { background: var(--modal-bg); color: var(--text); }
+        [data-theme="light"] .filter-panel input::placeholder { color: #9ca3af; opacity: 1; }
+
+        .score-range-wrap {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .score-range-wrap input[type=number] {
+            width: 60px; text-align: center; padding: 10px 6px;
+        }
+        .score-range-wrap input[type=number]::-webkit-inner-spin-button { opacity: 1; }
+        .score-range-sep { color: var(--text-dim); font-size: 13px; }
+
+        .toggle-wrap {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 0;
+        }
+        .toggle-switch {
+            width: 40px; height: 22px;
+            background: var(--border);
+            border-radius: 11px;
+            position: relative;
+            cursor: pointer;
+            transition: background .2s;
+            flex-shrink: 0;
+        }
+        .toggle-switch.on { background: var(--accent); }
+        .toggle-switch::after {
+            content: '';
+            position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px;
+            background: #fff; border-radius: 50%;
+            transition: transform .2s;
+        }
+        .toggle-switch.on::after { transform: translateX(18px); }
+        .toggle-text { font-size: 12px; color: var(--text-mid); }
+
         .btn-reset {
-            padding: 11px 18px; font-size: 13px; font-weight: 600;
+            padding: 10px 16px; font-size: 12px; font-weight: 600;
             background: rgba(255,255,255,0.04);
             border: 1px solid var(--border);
-            border-radius: 10px; color: var(--text-mid);
+            border-radius: 8px; color: var(--text-mid);
             cursor: pointer; font-family: inherit;
             transition: background .2s, color .2s;
-            white-space: nowrap;
+            white-space: nowrap; align-self: end;
         }
         .btn-reset:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+        .btn-toggle-adv {
+            background: none; border: none;
+            color: var(--accent-light); font-size: 12px;
+            cursor: pointer; font-family: inherit;
+            display: flex; align-items: center; gap: 4px;
+            padding: 8px 0 0; font-weight: 500;
+        }
+        .btn-toggle-adv:hover { text-decoration: underline; }
+        .adv-hidden { display: none !important; }
+
+        .filter-count {
+            font-size: 11px; color: var(--accent-light);
+            margin-top: 8px; font-weight: 500;
+        }
 
         /* ── Table Card ─────────────── */
         .table-card {
@@ -377,13 +448,19 @@
             .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .stat-card { padding: 14px; }
             .stat-value { font-size: 22px; }
-            .filter-bar { flex-direction: column; gap: 8px; }
-            .filter-bar input, .filter-bar select, .btn-reset { width: 100%; }
+            .filter-row { grid-template-columns: 1fr 1fr; }
+            .filter-row-2 { grid-template-columns: 1fr 1fr; }
+            .filter-panel { padding: 14px 16px; }
             .fit-grid { grid-template-columns: 1fr; }
             .modal-card { max-width: 100%; border-radius: 16px; }
             .modal-header { padding: 16px 18px 14px; }
             .modal-body { padding: 16px 18px 24px; }
             .modal-score-num { font-size: 28px; }
+        }
+        @media (max-width: 480px) {
+            .filter-row, .filter-row-2 { grid-template-columns: 1fr; }
+            .score-range-wrap { justify-content: stretch; }
+            .score-range-wrap input[type=number] { flex: 1; }
         }
         @media (min-width: 769px) {
             .nav-user { display: block; }
@@ -414,11 +491,71 @@
         </div>
 
         <!-- Filters -->
-        <div class="filter-bar hidden" id="filterBar">
-            <input type="text" id="searchBox" class="search-input" placeholder="Search all leads…">
-            <select id="filterCol" class="filter-select"><option value=""><i class="bi bi-funnel"></i> Filter by column…</option></select>
-            <input type="text" id="filterVal" class="filter-value" placeholder="Contains…" disabled>
-            <button class="btn-reset" id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+        <div class="filter-panel hidden" id="filterBar">
+            <!-- Row 1: Search + Score + Sector + Reset -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-search"></i> Global Search</div>
+                    <input type="text" id="searchBox" placeholder="Company, position, keyword…">
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-speedometer2"></i> Score Range</div>
+                    <div class="score-range-wrap">
+                        <input type="number" id="scoreMin" min="0" max="100" placeholder="0">
+                        <span class="score-range-sep">to</span>
+                        <input type="number" id="scoreMax" min="0" max="100" placeholder="100">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-building"></i> Sector</div>
+                    <select id="sectorFilter">
+                        <option value="">All Sectors</option>
+                        <option value="auto">Automotive</option>
+                        <option value="pharma">Pharma / MedTech</option>
+                        <option value="aero">Aerospace</option>
+                        <option value="manufacturing">Manufacturing</option>
+                        <option value="gcc">GCC / R&D Center</option>
+                        <option value="agri">Agriculture</option>
+                        <option value="tech">Technology</option>
+                    </select>
+                </div>
+                <button class="btn-reset" id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+            </div>
+
+            <!-- Toggle to show advanced -->
+            <button class="btn-toggle-adv" id="toggleAdv"><i class="bi bi-sliders"></i> Advanced Filters</button>
+
+            <!-- Row 2: Position + Contact + Fit Reason + Date -->
+            <div class="filter-row-2 adv-hidden" id="advRow">
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-person-badge"></i> Position</div>
+                    <select id="positionFilter">
+                        <option value="">All Positions</option>
+                        <option value="vp">VP / Vice President</option>
+                        <option value="director">Director</option>
+                        <option value="head">Head / Lead</option>
+                        <option value="manager">Manager</option>
+                        <option value="cto">CTO / CXO</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-person-check"></i> Has Contact</div>
+                    <div class="toggle-wrap">
+                        <div class="toggle-switch" id="contactToggle"></div>
+                        <span class="toggle-text">Email or LinkedIn</span>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-lightbulb"></i> Fit Reason</div>
+                    <input type="text" id="fitSearch" placeholder="patent, R&D, innovation…">
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-calendar-range"></i> Since Date</div>
+                    <input type="date" id="dateFrom">
+                </div>
+            </div>
+
+            <div class="filter-count" id="filterCount"></div>
         </div>
 
         <!-- Loader -->
@@ -482,8 +619,6 @@
     // ─── DOM Refs ─────────────────────────────────
     const $ = id => document.getElementById(id);
     const searchBox  = $('searchBox');
-    const filterCol  = $('filterCol');
-    const filterVal  = $('filterVal');
     const resetBtn   = $('resetBtn');
     const loader     = $('loader');
     const errorBox   = $('errorBox');
@@ -519,13 +654,6 @@
             if (allHeaders.length === 0) throw new Error('No data found in sheet.');
 
             leadCount.textContent = allLeads.length + ' leads';
-
-            // Populate filter dropdown
-            allHeaders.forEach(h => {
-                const opt = document.createElement('option');
-                opt.value = h; opt.textContent = h;
-                filterCol.appendChild(opt);
-            });
 
             computeStats();
             renderTable(allHeaders, allLeads);
@@ -686,25 +814,123 @@
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
     // ─── Filter Logic ─────────────────────────────
-    searchBox.addEventListener('input', applyFilters);
-    filterCol.addEventListener('change', () => {
-        filterVal.disabled = !filterCol.value;
-        filterVal.value = '';
+    const scoreMin      = $('scoreMin');
+    const scoreMax      = $('scoreMax');
+    const sectorFilter  = $('sectorFilter');
+    const positionFilter = $('positionFilter');
+    const contactToggle = $('contactToggle');
+    const fitSearch     = $('fitSearch');
+    const dateFrom      = $('dateFrom');
+    const toggleAdv     = $('toggleAdv');
+    const advRow        = $('advRow');
+    const filterCount   = $('filterCount');
+    let contactOnly = false;
+
+    // Sector keywords map
+    const SECTOR_MAP = {
+        auto: ['automotive','auto','motor','vehicle','car','ev','tesla','ford','toyota','bmw'],
+        pharma: ['pharma','medtech','biotech','medical','drug','health','bayer','pfizer','novartis'],
+        aero: ['aerospace','aviation','defense','defence','satellite','airbus','boeing'],
+        manufacturing: ['manufacturing','industrial','factory','production','steel','cement'],
+        gcc: ['gcc','global capability','r&d center','r&d centre','engineering center','innovation hub'],
+        agri: ['agriculture','agri','crop','farm','seed','fertilizer'],
+        tech: ['technology','software','it','digital','cloud','saas','ai','data']
+    };
+
+    // Position keywords map
+    const POSITION_MAP = {
+        vp: ['vp','vice president'],
+        director: ['director'],
+        head: ['head','lead','principal'],
+        manager: ['manager'],
+        cto: ['cto','coo','cio','cfo','chief']
+    };
+
+    // Toggle advanced row
+    toggleAdv.addEventListener('click', () => {
+        const hidden = advRow.classList.toggle('adv-hidden');
+        toggleAdv.innerHTML = hidden
+            ? '<i class="bi bi-sliders"></i> Advanced Filters'
+            : '<i class="bi bi-sliders"></i> Hide Advanced';
+    });
+
+    // Contact toggle
+    contactToggle.addEventListener('click', () => {
+        contactOnly = !contactOnly;
+        contactToggle.classList.toggle('on', contactOnly);
         applyFilters();
     });
-    filterVal.addEventListener('input', applyFilters);
+
+    // Attach listeners
+    [searchBox, fitSearch].forEach(el => el.addEventListener('input', applyFilters));
+    [scoreMin, scoreMax, dateFrom].forEach(el => el.addEventListener('change', applyFilters));
+    [sectorFilter, positionFilter].forEach(el => el.addEventListener('change', applyFilters));
+
     resetBtn.addEventListener('click', () => {
-        searchBox.value = ''; filterCol.value = ''; filterVal.value = ''; filterVal.disabled = true;
+        searchBox.value = ''; scoreMin.value = ''; scoreMax.value = '';
+        sectorFilter.value = ''; positionFilter.value = '';
+        fitSearch.value = ''; dateFrom.value = '';
+        contactOnly = false;
+        contactToggle.classList.remove('on');
+        filterCount.textContent = '';
         renderTable(allHeaders, allLeads);
     });
 
     function applyFilters() {
         let f = [...allLeads];
+
+        // 1. Global search
         const q = searchBox.value.trim().toLowerCase();
         if (q) f = f.filter(l => Object.values(l).some(v => v.toLowerCase().includes(q)));
-        const col = filterCol.value, val = filterVal.value.trim().toLowerCase();
-        if (col && val) f = f.filter(l => (l[col] || '').toLowerCase().includes(val));
+
+        // 2. Score range
+        const sMin = parseInt(scoreMin.value);
+        const sMax = parseInt(scoreMax.value);
+        if (!isNaN(sMin)) f = f.filter(l => { const s = parseInt(l['Score']); return !isNaN(s) && s >= sMin; });
+        if (!isNaN(sMax)) f = f.filter(l => { const s = parseInt(l['Score']); return !isNaN(s) && s <= sMax; });
+
+        // 3. Sector
+        const sec = sectorFilter.value;
+        if (sec && SECTOR_MAP[sec]) {
+            const kw = SECTOR_MAP[sec];
+            f = f.filter(l => {
+                const blob = ((l['Company']||'')+(l['Company Bio']||'')+(l['Fit Reason']||'')+(l['Role Summary']||'')).toLowerCase();
+                return kw.some(k => blob.includes(k));
+            });
+        }
+
+        // 4. Position
+        const pos = positionFilter.value;
+        if (pos && POSITION_MAP[pos]) {
+            const kw = POSITION_MAP[pos];
+            f = f.filter(l => {
+                const p = (l['Position']||'').toLowerCase();
+                return kw.some(k => p.includes(k));
+            });
+        }
+
+        // 5. Has contact
+        if (contactOnly) {
+            f = f.filter(l => (l['Email'] && l['Email'].includes('@')) || (l['LinkedIn'] && l['LinkedIn'].startsWith('http')));
+        }
+
+        // 6. Fit reason keyword
+        const fk = fitSearch.value.trim().toLowerCase();
+        if (fk) f = f.filter(l => (l['Fit Reason']||'').toLowerCase().includes(fk));
+
+        // 7. Date range
+        const df = dateFrom.value;
+        if (df) {
+            const since = new Date(df);
+            f = f.filter(l => {
+                const d = new Date(l['Date']);
+                return !isNaN(d) && d >= since;
+            });
+        }
+
         renderTable(allHeaders, f);
+        const active = [q, !isNaN(sMin), !isNaN(sMax), sec, pos, contactOnly, fk, df].filter(Boolean).length;
+        filterCount.textContent = active ? `${f.length} lead${f.length!==1?'s':''} matching ${active} filter${active!==1?'s':''}` : '';
     }
 
     // ─── Logout ───────────────────────────────────
