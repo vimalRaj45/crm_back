@@ -185,7 +185,7 @@ app.get('/api/leads', requireAuth, async (req, res) => {
 });
 
 // ─── Start ───────────────────────────────────────
-app.listen(PORT, () => {
-    console.log(`\n🚀 Spirelia CRM running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n🚀 Spirelia CRM running on port ${PORT}`);
     console.log(`🔒 Allowed: ${ALLOWED_EMAILS.join(', ')}\n`);
 });
