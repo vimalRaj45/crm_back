@@ -26,6 +26,23 @@
             --text-dim: #6b6b80;
             --text-mid: #9b9bb0;
             --radius: 14px;
+            --nav-bg: rgba(6,6,15,0.85);
+            --modal-bg: #111122;
+            --th-bg: rgba(124,58,237,0.12);
+        }
+
+        [data-theme="light"] {
+            --bg: #f4f6fa;
+            --bg-card: rgba(255,255,255,0.85);
+            --bg-card-hover: rgba(255,255,255,1);
+            --border: rgba(0,0,0,0.08);
+            --accent-glow: rgba(124,58,237,0.12);
+            --text: #1a1a2e;
+            --text-dim: #6b7280;
+            --text-mid: #4b5563;
+            --nav-bg: rgba(255,255,255,0.9);
+            --modal-bg: #ffffff;
+            --th-bg: rgba(124,58,237,0.08);
         }
 
         body {
@@ -39,7 +56,7 @@
         .navbar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 14px 24px;
-            background: rgba(6,6,15,0.85);
+            background: var(--nav-bg);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
             position: sticky; top: 0; z-index: 100;
@@ -53,8 +70,21 @@
             background: linear-gradient(135deg, var(--accent), var(--blue));
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px;
+            font-size: 16px; color: #fff;
         }
+        .btn-theme {
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-mid); font-size: 17px;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            transition: background .2s, color .2s, transform .3s;
+            font-family: inherit;
+        }
+        .btn-theme:hover { background: rgba(124,58,237,0.15); color: var(--accent-light); }
+        .btn-theme:active { transform: rotate(180deg); }
         .nav-right { display: flex; align-items: center; gap: 16px; }
         .nav-user {
             font-size: 13px; color: var(--text-mid);
@@ -152,7 +182,7 @@
         thead { position: sticky; top: 0; z-index: 2; }
         thead th {
             padding: 12px 14px;
-            background: rgba(124,58,237,0.12);
+            background: var(--th-bg);
             color: var(--accent-light);
             font-weight: 600; font-size: 11px;
             text-transform: uppercase; letter-spacing: .6px;
@@ -160,6 +190,14 @@
             border-bottom: 1px solid var(--border);
             text-align: left;
         }
+        [data-theme="light"] thead th { color: var(--accent); }
+        [data-theme="light"] .score-high { background: rgba(34,197,94,0.15); color: #15803d; }
+        [data-theme="light"] .score-mid  { background: rgba(245,158,11,0.15); color: #b45309; }
+        [data-theme="light"] .score-low  { background: rgba(239,68,68,0.12); color: #dc2626; }
+        [data-theme="light"] .nav-brand-icon { color: #fff; }
+        [data-theme="light"] .modal-card { box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+        [data-theme="light"] .stat-card { box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+        [data-theme="light"] tbody td a { color: #6d28d9; }
         tbody tr {
             border-bottom: 1px solid rgba(255,255,255,0.03);
             transition: background .15s;
@@ -243,7 +281,7 @@
         .modal-overlay.open { opacity: 1; visibility: visible; }
 
         .modal-card {
-            background: #111122;
+            background: var(--modal-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
             width: 100%; max-width: 600px;
@@ -262,7 +300,7 @@
             padding: 20px 24px 16px;
             border-bottom: 1px solid var(--border);
             position: sticky; top: 0;
-            background: #111122;
+            background: var(--modal-bg);
             z-index: 2;
         }
         .modal-header h2 {
@@ -355,31 +393,32 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <div class="nav-brand-icon">📡</div>
+            <div class="nav-brand-icon"><i class="bi bi-radar"></i></div>
             <span>Spirelia Intelligence</span>
         </div>
         <div class="nav-right">
             <span class="nav-badge" id="leadCount">—</span>
             <span class="nav-user" id="userEmail"></span>
-            <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
+            <button class="btn-theme" id="themeToggle" title="Toggle theme"><i class="bi bi-moon-stars-fill"></i></button>
+            <button class="btn-logout" id="logoutBtn" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
         </div>
     </nav>
 
     <div class="container">
         <!-- Stats -->
         <div class="stats-row hidden" id="statsRow">
-            <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-value purple" id="statTotal">0</div></div>
-            <div class="stat-card"><div class="stat-label">Avg Score</div><div class="stat-value blue" id="statAvg">—</div></div>
-            <div class="stat-card"><div class="stat-label">Top Score</div><div class="stat-value green" id="statTop">—</div></div>
-            <div class="stat-card"><div class="stat-label">Companies</div><div class="stat-value amber" id="statCompanies">0</div></div>
+            <div class="stat-card"><div class="stat-label"><i class="bi bi-people"></i> Total Leads</div><div class="stat-value purple" id="statTotal">0</div></div>
+            <div class="stat-card"><div class="stat-label"><i class="bi bi-graph-up-arrow"></i> Avg Score</div><div class="stat-value blue" id="statAvg">—</div></div>
+            <div class="stat-card"><div class="stat-label"><i class="bi bi-trophy"></i> Top Score</div><div class="stat-value green" id="statTop">—</div></div>
+            <div class="stat-card"><div class="stat-label"><i class="bi bi-buildings"></i> Companies</div><div class="stat-value amber" id="statCompanies">0</div></div>
         </div>
 
         <!-- Filters -->
         <div class="filter-bar hidden" id="filterBar">
-            <input type="text" id="searchBox" class="search-input" placeholder="🔍  Search all leads…">
-            <select id="filterCol" class="filter-select"><option value="">Filter by column…</option></select>
+            <input type="text" id="searchBox" class="search-input" placeholder="Search all leads…">
+            <select id="filterCol" class="filter-select"><option value=""><i class="bi bi-funnel"></i> Filter by column…</option></select>
             <input type="text" id="filterVal" class="filter-value" placeholder="Contains…" disabled>
-            <button class="btn-reset" id="resetBtn">↺ Reset</button>
+            <button class="btn-reset" id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
         </div>
 
         <!-- Loader -->
@@ -403,7 +442,7 @@
 
         <!-- Fit Reasons -->
         <div class="fit-section hidden" id="fitSection">
-            <h2>💡 Fit Reason Highlights</h2>
+            <h2><i class="bi bi-lightbulb"></i> Fit Reason Highlights</h2>
             <div class="fit-grid" id="fitGrid"></div>
         </div>
     </div>
@@ -674,6 +713,31 @@
         localStorage.removeItem('spirelia_token');
         localStorage.removeItem('spirelia_email');
         window.location.href = '/login.html';
+    }
+
+    // ─── Theme Toggle ─────────────────────────────
+    const themeToggle = $('themeToggle');
+    const savedTheme = localStorage.getItem('spirelia_theme') || 'dark';
+    if (savedTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    updateThemeIcon();
+
+    themeToggle.addEventListener('click', () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (isLight) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('spirelia_theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('spirelia_theme', 'light');
+        }
+        updateThemeIcon();
+    });
+
+    function updateThemeIcon() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        themeToggle.innerHTML = isLight
+            ? '<i class="bi bi-sun-fill"></i>'
+            : '<i class="bi bi-moon-stars-fill"></i>';
     }
 
     // ─── Init ─────────────────────────────────────
