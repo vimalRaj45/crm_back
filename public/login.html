@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spirelia Intelligence — Login</title>
+    <meta name="description" content="Secure OTP login for Spirelia Lead Intelligence CRM">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #06060f;
+            --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --accent: #7c3aed;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(124,58,237,0.35);
+            --text: #f1f1f4;
+            --text-dim: #8b8b9e;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --radius: 20px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Animated BG ─────────────── */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove { to { background-position: 60px 60px; } }
+
+        .bg-orb {
+            position: fixed; border-radius: 50%; filter: blur(100px); opacity: .3;
+            animation: orbFloat 12s ease-in-out infinite alternate;
+        }
+        .bg-orb.a { width: 400px; height: 400px; background: #7c3aed; top: -100px; left: -100px; }
+        .bg-orb.b { width: 350px; height: 350px; background: #3b82f6; bottom: -80px; right: -80px; animation-delay: -6s; }
+
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, 30px) scale(1.15); }
+        }
+
+        /* ── Card ────────────────────── */
+        .login-card {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 420px;
+            margin: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 44px 36px;
+            box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04);
+            animation: cardIn .6s cubic-bezier(.16,1,.3,1);
+        }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(.96); } }
+
+        /* ── Brand ───────────────────── */
+        .brand { text-align: center; margin-bottom: 36px; }
+        .brand-icon {
+            width: 56px; height: 56px; margin: 0 auto 14px;
+            background: linear-gradient(135deg, var(--accent), #3b82f6);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 8px 30px var(--accent-glow);
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+        @keyframes iconPulse {
+            0%, 100% { box-shadow: 0 8px 30px var(--accent-glow); }
+            50% { box-shadow: 0 8px 50px rgba(124,58,237,0.55); }
+        }
+        .brand h1 { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -.5px; }
+        .brand p  { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+        /* ── Steps ───────────────────── */
+        .step { display: none; animation: stepIn .4s ease; }
+        .step.active { display: block; }
+        @keyframes stepIn { from { opacity: 0; transform: translateX(20px); } }
+
+        /* ── Inputs ──────────────────── */
+        label { display: block; font-size: 13px; font-weight: 500; color: var(--text-dim); margin-bottom: 8px; }
+
+        .input-wrap {
+            position: relative; margin-bottom: 20px;
+        }
+        .input-wrap input {
+            width: 100%; padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: inherit; font-size: 15px;
+            outline: none;
+            transition: border-color .25s, box-shadow .25s;
+        }
+        .input-wrap input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .input-wrap input::placeholder { color: rgba(255,255,255,.2); }
+
+        /* ── OTP Boxes ───────────────── */
+        .otp-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
+        .otp-box {
+            width: 50px; height: 58px;
+            text-align: center; font-size: 24px; font-weight: 700;
+            color: var(--text);
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .otp-box:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ── Buttons ─────────────────── */
+        .btn-primary {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--accent), #6d28d9);
+            border: none; border-radius: 12px;
+            color: #fff; font-family: inherit;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .25s, opacity .25s;
+            position: relative; overflow: hidden;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 30px var(--accent-glow); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+        .btn-link {
+            background: none; border: none; color: var(--accent-light);
+            font-family: inherit; font-size: 13px; cursor: pointer;
+            margin-top: 16px; display: block; text-align: center; width: 100%;
+        }
+        .btn-link:hover { text-decoration: underline; }
+
+        /* ── Feedback ─────────────────── */
+        .msg {
+            padding: 12px 14px; border-radius: 10px;
+            font-size: 13px; margin-bottom: 18px;
+            display: none; align-items: center; gap: 8px;
+            animation: stepIn .3s ease;
+        }
+        .msg.error   { display: flex; background: rgba(239,68,68,.12); color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
+        .msg.success { display: flex; background: rgba(34,197,94,.1); color: #86efac; border: 1px solid rgba(34,197,94,.2); }
+
+        /* ── Spinner ──────────────────── */
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Mobile ───────────────────── */
+        @media (max-width: 480px) {
+            .login-card { padding: 32px 24px; }
+            .otp-box { width: 44px; height: 52px; font-size: 20px; }
+            .otp-row { gap: 7px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-orb a"></div>
+    <div class="bg-orb b"></div>
+
+    <div class="login-card">
+        <div class="brand">
+            <div class="brand-icon">📡</div>
+            <h1>Spirelia Intelligence</h1>
+            <p>Secure Access Portal</p>
+        </div>
+
+        <div id="msgBox" class="msg"></div>
+
+        <!-- Step 1: Email -->
+        <div id="stepEmail" class="step active">
+            <label for="emailInput">Email Address</label>
+            <div class="input-wrap">
+                <input type="email" id="emailInput" placeholder="you@company.com" autocomplete="email">
+            </div>
+            <button class="btn-primary" id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
+        </div>
+
+        <!-- Step 2: OTP -->
+        <div id="stepOtp" class="step">
+            <label>Enter 6-digit OTP</label>
+            <div class="otp-row" id="otpRow">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" data-idx="0">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" data-idx="1">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" data-idx="2">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" data-idx="3">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" data-idx="4">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" data-idx="5">
+            </div>
+            <button class="btn-primary" id="verifyBtn" onclick="verifyOtp()">Verify & Login</button>
+            <button class="btn-link" onclick="resendOtp()">Resend OTP</button>
+            <button class="btn-link" onclick="goBack()">← Change email</button>
+        </div>
+    </div>
+
+<script>
+    // Redirect if already logged in
+    (async () => {
+        const token = localStorage.getItem('spirelia_token');
+        if (!token) return;
+        try {
+            const r = await fetch('/api/check-auth', { headers: { Authorization: 'Bearer ' + token } });
+            if (r.ok) window.location.href = '/';
+        } catch {}
+    })();
+
+    let currentEmail = '';
+
+    const msgBox    = document.getElementById('msgBox');
+    const stepEmail = document.getElementById('stepEmail');
+    const stepOtp   = document.getElementById('stepOtp');
+    const sendBtn   = document.getElementById('sendOtpBtn');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const otpBoxes  = document.querySelectorAll('.otp-box');
+
+    function showMsg(text, type) {
+        msgBox.className = 'msg ' + type;
+        msgBox.innerHTML = text;
+    }
+    function clearMsg() { msgBox.className = 'msg'; msgBox.innerHTML = ''; }
+    function setLoading(btn, loading) {
+        btn.disabled = loading;
+        if (loading) btn.dataset.origText = btn.textContent, btn.innerHTML = '<span class="spinner"></span>';
+        else btn.textContent = btn.dataset.origText || btn.textContent;
+    }
+
+    // OTP box auto-advance
+    otpBoxes.forEach((box, i) => {
+        box.addEventListener('input', () => {
+            box.value = box.value.replace(/\D/g, '');
+            if (box.value && i < 5) otpBoxes[i + 1].focus();
+        });
+        box.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !box.value && i > 0) otpBoxes[i - 1].focus();
+        });
+        box.addEventListener('paste', e => {
+            e.preventDefault();
+            const paste = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+            paste.split('').forEach((ch, j) => { if (otpBoxes[j]) otpBoxes[j].value = ch; });
+            if (paste.length === 6) verifyOtp();
+        });
+    });
+
+    // Enter key on email input
+    document.getElementById('emailInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendOtp();
+    });
+
+    async function sendOtp() {
+        clearMsg();
+        const email = document.getElementById('emailInput').value.trim();
+        if (!email) return showMsg('Please enter your email', 'error');
+
+        setLoading(sendBtn, true);
+        try {
+            const r = await fetch('/api/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.error || 'Failed');
+
+            currentEmail = email;
+            stepEmail.classList.remove('active');
+            stepOtp.classList.add('active');
+            clearMsg();
+            showMsg('✓ OTP sent to ' + email, 'success');
+            otpBoxes[0].focus();
+        } catch (err) {
+            showMsg(err.message, 'error');
+        } finally { setLoading(sendBtn, false); }
+    }
+
+    async function verifyOtp() {
+        clearMsg();
+        const otp = [...otpBoxes].map(b => b.value).join('');
+        if (otp.length < 6) return showMsg('Enter all 6 digits', 'error');
+
+        setLoading(verifyBtn, true);
+        try {
+            const r = await fetch('/api/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: currentEmail, otp }),
+            });
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.error || 'Verification failed');
+
+            localStorage.setItem('spirelia_token', d.token);
+            localStorage.setItem('spirelia_email', d.email);
+            showMsg('✓ Welcome! Redirecting…', 'success');
+            setTimeout(() => window.location.href = '/', 800);
+        } catch (err) {
+            showMsg(err.message, 'error');
+            otpBoxes.forEach(b => b.value = '');
+            otpBoxes[0].focus();
+        } finally { setLoading(verifyBtn, false); }
+    }
+
+    function resendOtp() {
+        document.getElementById('emailInput').value = currentEmail;
+        sendOtp();
+    }
+
+    function goBack() {
+        clearMsg();
+        stepOtp.classList.remove('active');
+        stepEmail.classList.add('active');
+        otpBoxes.forEach(b => b.value = '');
+    }
+</script>
+</body>
+</html>
