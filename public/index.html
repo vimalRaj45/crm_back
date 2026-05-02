@@ -774,6 +774,9 @@
             } else if (v.startsWith('http')) {
                 const label = v.length > 50 ? v.slice(0, 50) + '…' : v;
                 valHtml = `<a href="${esc(v)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(label)}</a>`;
+            } else if (h === 'Domain' && v.includes('.')) {
+                const domainUrl = v.startsWith('http') ? v : 'https://' + v;
+                valHtml = `<a href="${esc(domainUrl)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(v)}</a>`;
             } else {
                 valHtml = esc(v);
             }
