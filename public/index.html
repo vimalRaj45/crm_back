@@ -1102,6 +1102,12 @@
             : '<i class="bi bi-moon-stars-fill"></i>';
     }
 
+    // ─── Leave Confirmation ───────────────────────
+    window.addEventListener('beforeunload', function (e) {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Unsaved changes may be lost.';
+    });
+
     // ─── Init ─────────────────────────────────────
     fetchLeads();
 </script>
