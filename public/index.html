@@ -701,7 +701,7 @@
                 let v = lead[h] || '';
                 if (h === 'Domain') {
                     const compName = lead['Company'] || v || 'Company';
-                    const searchQuery = compName + " linkedin website contact";
+                    const searchQuery = compName + " linkedin and official website and contact";
                     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
                     return `<td><a href="${searchUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="bi bi-google"></i> Google Search</a></td>`;
                 }
