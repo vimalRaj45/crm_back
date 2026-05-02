@@ -37,18 +37,18 @@ var CONFIG = {
   MAX_API_RETRIES: 3
 };
 
-// COLUMN INDICES (0-based) - 15 COLUMNS for Leads sheet
+// COLUMN INDICES (0-based) - 16 COLUMNS for Leads sheet
 var COL = {
   DATE: 0, COMPANY: 1, POSITION: 2, ROLE_SUMMARY: 3, COMPANY_BIO: 4,
   POSTED: 5, DOMAIN: 6, EMAIL: 7, LINKEDIN: 8, SCORE: 9,
-  DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13, OUTREACH_MSG: 14
+  DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13, OUTREACH_MSG: 14, NOTES: 15
 };
 
-// HEADERS for Leads sheet (15 columns)
+// HEADERS for Leads sheet (16 columns)
 var HEADERS = [
   "Date", "Company", "Position", "Role Summary", "Company Bio", "Posted",
   "Domain", "Email", "LinkedIn", "Score", "Decision Maker Link",
-  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg"
+  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg", "Notes"
 ];
 
 // ✅ HEADERS for Filtered_Leads sheet (14 cols + Filter_Reason)
@@ -106,7 +106,7 @@ function initializeCRM() {
     var needsUpdate = true;
     if (sheet.getLastColumn() > 0 && sheet.getLastRow() > 0) {
       var currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[currentHeaders.length - 1] !== "Outreach Msg";
+      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[currentHeaders.length - 1] !== "Notes";
     }
     if (needsUpdate) {
       sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
@@ -117,6 +117,7 @@ function initializeCRM() {
       sheet.autoResizeColumns(1, HEADERS.length);
       sheet.setColumnWidth(COL.FIT_REASON + 1, 320);
       sheet.setColumnWidth(COL.OUTREACH_MSG + 1, 400);
+      sheet.setColumnWidth(COL.NOTES + 1, 300);
       var scoreRange = sheet.getRange(2, COL.SCORE + 1, 1000, 1);
       var rule = SpreadsheetApp.newDataValidation().requireNumberBetween(0, 100).build();
       scoreRange.setDataValidation(rule);
@@ -141,8 +142,8 @@ function initializeCRM() {
         .setHorizontalAlignment("center");
       filteredSheet.setFrozenRows(1);
       filteredSheet.autoResizeColumns(1, FILTERED_HEADERS.length);
-      filteredSheet.setColumnWidth(15, 250); // Filter_Reason column
-      filteredSheet.setColumnWidth(16, 180); // Filtered_At column
+      filteredSheet.setColumnWidth(16, 250); // Filter_Reason column
+      filteredSheet.setColumnWidth(17, 180); // Filtered_At column
       log("INFO", "Filtered_Leads sheet headers created");
     }
     
@@ -271,6 +272,7 @@ function saveFilteredLead(lead, msgId, msgDate, filterReason) {
       msgId || "",
       lead.fit_reason || "",
       lead.outreach_msg || "",
+      "", // ✅ Notes (Empty string for manual entry)
       filterReason, // ✅ WHY it was filtered
       Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") // ✅ When filtered
     ];
@@ -445,7 +447,7 @@ function fetchAndQualifyLeads() {
               l.role_summary || "N/A", l.company_bio || "N/A", l.posted_date || "",
               l.domain || "", l.email || "", l.linkedin || "", l.score || "",
               l.decision_link || "", l.wikipedia || "", msgId, l.fit_reason || "",
-              l.outreach_msg || ""
+              l.outreach_msg || "", "" // Notes
             ];
             sheet.appendRow(newRow);
             SpreadsheetApp.flush();
