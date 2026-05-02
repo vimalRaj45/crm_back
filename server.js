@@ -160,7 +160,7 @@ app.get('/api/leads', requireAuth, async (req, res) => {
     try {
         const auth = new google.auth.GoogleAuth({
             keyFile: SERVICE_ACCOUNT,
-            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
         const sheets = google.sheets({ version: 'v4', auth });
         const result = await sheets.spreadsheets.values.get({
