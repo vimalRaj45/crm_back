@@ -699,6 +699,11 @@
         tableBody.innerHTML = leads.map((lead, idx) =>
             `<tr data-idx="${idx}" onclick="openLeadModal(${idx})">` + headers.map(h => {
                 let v = lead[h] || '';
+                if (h === 'Domain') {
+                    const compName = lead['Company'] || v || 'Company';
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(compName)}`;
+                    return `<td><a href="${searchUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="bi bi-google"></i> Google Search</a></td>`;
+                }
                 if (h === 'Score' && v) {
                     const n = parseInt(v);
                     const cls = n >= 90 ? 'score-high' : n >= 70 ? 'score-mid' : 'score-low';
@@ -727,7 +732,7 @@
         'Role Summary': 'bi-file-text',
         'Company Bio': 'bi-info-circle',
         'Posted': 'bi-clock-history',
-        'Domain': 'bi-globe2',
+        'Domain': 'bi-google',
         'Email': 'bi-envelope-at',
         'LinkedIn': 'bi-linkedin',
         'Score': 'bi-speedometer2',
@@ -799,9 +804,10 @@
             } else if (v.startsWith('http')) {
                 const label = v.length > 50 ? v.slice(0, 50) + '…' : v;
                 valHtml = `<a href="${esc(v)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(label)}</a>`;
-            } else if (h === 'Domain' && v.includes('.')) {
-                const domainUrl = v.startsWith('http') ? v : 'https://' + v;
-                valHtml = `<a href="${esc(domainUrl)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(v)}</a>`;
+            } else if (h === 'Domain') {
+                const compName = lead['Company'] || v || 'Company';
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(compName)}`;
+                valHtml = `<a href="${searchUrl}" target="_blank" rel="noopener"><i class="bi bi-google" style="margin-right:4px"></i>Search for ${esc(compName)}</a>`;
             } else if (h === 'Outreach Msg') {
                 valHtml = `<div style="background:rgba(124,58,237,0.05); padding:12px; border-radius:8px; border:1px solid rgba(124,58,237,0.1); white-space:pre-wrap; font-family:monospace; font-size:12px; position:relative;">
                     ${esc(v)}
