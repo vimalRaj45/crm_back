@@ -4,214 +4,400 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spirelia CRM - Interactive Walkthrough</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --accent: #6366f1;
-            --accent-light: #e0e7ff;
+            --bg-primary: #fafbfc;
+            --bg-secondary: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
+            --border-color: #e2e8f0;
+            --accent-primary: #6366f1;
+            --accent-light: #eef2ff;
+            --accent-dark: #4f46e5;
             --blue: #3b82f6;
             --green: #10b981;
             --amber: #f59e0b;
+            --red: #ef4444;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
         body {
-            font-family: 'Outfit', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow-x: hidden;
         }
 
-        /* Subtle Light Gradient Background */
+        /* Gradient Background */
         .bg-gradient {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: 
-                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
             z-index: -1;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            flex-grow: 1;
+        /* Main Layout */
+        .wrapper {
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
 
-        header { text-align: center; margin-bottom: 40px; }
-        .badge {
-            background: var(--accent-light);
-            color: var(--accent);
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 16px;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 48px 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
-        h1 { font-size: 40px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; color: var(--text-main); }
-        header p { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+
+        header p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 550px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
 
         /* Progress Indicators */
         .progress-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 40px;
+            gap: 8px;
+            margin-bottom: 56px;
+            flex-wrap: wrap;
         }
+
         .progress-dot {
-            width: 12px; height: 12px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background: var(--border);
-            transition: all 0.4s ease;
+            background: var(--border-color);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
         }
+
+        .progress-dot:hover {
+            background: var(--text-tertiary);
+        }
+
         .progress-dot.active {
-            background: var(--accent);
-            transform: scale(1.3);
+            background: var(--accent-primary);
+            transform: scale(1.4);
+            box-shadow: 0 0 0 6px var(--accent-light);
         }
+
         .progress-line {
-            width: 40px; height: 2px;
-            background: var(--border);
+            width: 28px;
+            height: 2px;
+            background: var(--border-color);
             transition: background 0.4s ease;
         }
-        .progress-line.active { background: var(--accent); }
 
-        /* Step Cards Container */
-        .step-container {
-            position: relative;
-            flex-grow: 1;
-            min-height: 400px; /* Ensure space for largest card */
+        .progress-line.active {
+            background: var(--accent-primary);
         }
 
-        /* Step Card Styling */
+        /* Step Container */
+        .step-container {
+            position: relative;
+            flex: 1;
+            min-height: 500px;
+            margin-bottom: 32px;
+        }
+
+        /* Step Card */
         .step-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
-            display: flex;
-            gap: 32px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 48px;
+            box-shadow: var(--shadow-lg);
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 40px;
             position: absolute;
-            top: 0; left: 0; width: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(20px) scale(0.98);
+            transform: translateY(30px);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
         }
 
         .step-card.active {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
             z-index: 10;
+            pointer-events: auto;
         }
 
         .step-card.previous {
-            transform: translateY(-20px) scale(0.98);
             opacity: 0;
+            visibility: hidden;
+            transform: translateY(-30px);
         }
 
+        /* Icon Wrapper */
         .step-icon-wrap {
-            width: 80px; height: 80px;
-            background: var(--bg);
-            border-radius: 20px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 36px;
+            width: 100px;
+            height: 100px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 44px;
             flex-shrink: 0;
-            border: 1px solid var(--border);
+            border: 2px solid;
+            transition: all 0.3s ease;
         }
 
-        .step-content { flex-grow: 1; }
-        .step-content h2 { font-size: 28px; margin-bottom: 12px; color: var(--text-main); }
-        .step-content p { font-size: 16px; color: var(--text-muted); margin-bottom: 24px; }
+        .step-card.active .step-icon-wrap {
+            transform: scale(1.05);
+        }
 
-        /* Feature List inside Card */
+        /* Icon Colors */
+        .icon-blue {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.25);
+            color: var(--blue);
+        }
+
+        .icon-accent {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.25);
+            color: var(--accent-primary);
+        }
+
+        .icon-amber {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.25);
+            color: var(--amber);
+        }
+
+        .icon-green {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.25);
+            color: var(--green);
+        }
+
+        /* Step Content */
+        .step-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .step-content h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .step-content > p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+            line-height: 1.7;
+            max-width: 600px;
+        }
+
+        /* Feature List */
         .feature-list {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+            margin-bottom: 24px;
         }
+
         .feat-item {
-            display: flex; align-items: center; gap: 10px;
-            font-size: 15px; color: var(--text-main);
-            background: var(--bg);
-            padding: 12px 16px; border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-        .feat-item i { font-size: 18px; }
-
-        /* Specific Icon Colors */
-        .icon-blue { color: var(--blue); background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2); }
-        .icon-accent { color: var(--accent); background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.2); }
-        .icon-amber { color: var(--amber); background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); }
-        .icon-green { color: var(--green); background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); }
-
-        .alert-box {
-            margin-top: 20px;
-            padding: 12px 16px;
-            background: #fffbeb;
-            border: 1px solid #fcd34d;
-            border-radius: 12px;
-            color: #b45309;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             font-size: 14px;
-            display: flex; align-items: center; gap: 10px;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
             font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        /* Navigation Buttons */
+        .feat-item:hover {
+            background: var(--accent-light);
+            border-color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+
+        .feat-item i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Alert Box */
+        .alert-box {
+            margin-top: 24px;
+            padding: 16px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            color: #92400e;
+            font-size: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .alert-box i {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* Navigation Controls */
         .nav-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 40px;
-            padding-top: 24px;
-            border-top: 1px solid var(--border);
+            gap: 16px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-color);
         }
 
+        .step-counter {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        /* Buttons */
         .btn {
             padding: 12px 24px;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
             border: none;
-            font-family: inherit;
+            font-family: 'Inter', sans-serif;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:disabled {
+            opacity: 0;
+            cursor: default;
+            pointer-events: none;
         }
 
         .btn-prev {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
         }
-        .btn-prev:hover { background: var(--bg); color: var(--text-main); }
-        .btn-prev:disabled { opacity: 0; cursor: default; }
+
+        .btn-prev:hover:not(:disabled) {
+            background: var(--bg-primary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateX(-4px);
+        }
 
         .btn-next {
-            background: var(--accent);
+            background: var(--accent-primary);
             color: white;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
             margin-left: auto;
         }
+
         .btn-next:hover {
+            background: var(--accent-dark);
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-next:active {
+            transform: translateY(0);
         }
 
         .btn-finish {
@@ -221,106 +407,288 @@
             display: none;
             margin-left: auto;
         }
+
         .btn-finish:hover {
+            background: #059669;
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
         }
 
+        .btn-finish:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .step-card { flex-direction: column; padding: 24px; gap: 20px; }
-            .feature-list { grid-template-columns: 1fr; }
-            .step-icon-wrap { width: 60px; height: 60px; font-size: 28px; }
-            h1 { font-size: 32px; }
+            .container {
+                padding: 32px 16px;
+            }
+
+            h1 {
+                font-size: 36px;
+            }
+
+            header {
+                margin-bottom: 36px;
+            }
+
+            header p {
+                font-size: 16px;
+            }
+
+            .step-card {
+                grid-template-columns: 1fr;
+                padding: 32px 24px;
+                gap: 24px;
+                border-radius: 16px;
+            }
+
+            .step-icon-wrap {
+                width: 80px;
+                height: 80px;
+                font-size: 36px;
+                margin: 0 auto;
+            }
+
+            .step-content h2 {
+                font-size: 26px;
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .feat-item {
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+
+            .nav-controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-prev {
+                order: 2;
+            }
+
+            .btn-next, .btn-finish {
+                order: 1;
+                margin-left: 0;
+            }
+
+            .step-counter {
+                order: 3;
+                width: 100%;
+                text-align: center;
+            }
+
+            .progress-container {
+                margin-bottom: 40px;
+            }
+
+            .step-container {
+                min-height: 400px;
+                margin-bottom: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .step-card {
+                padding: 24px 18px;
+            }
+
+            .step-content h2 {
+                font-size: 22px;
+            }
+
+            .step-content > p {
+                font-size: 15px;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .progress-dot {
+                width: 10px;
+                height: 10px;
+            }
+
+            .progress-line {
+                width: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="bg-gradient"></div>
-    <div class="container">
-        <header>
-            <span class="badge">Interactive Guide</span>
-            <h1>How Spirelia CRM Works</h1>
-            <p>Click 'Next' to walk through the pipeline step-by-step.</p>
-        </header>
+    
+    <div class="wrapper">
+        <div class="container">
+            <header>
+                <span class="badge">Interactive Guide</span>
+                <h1>How Spirelia CRM Works</h1>
+                <p>Click 'Next' to walk through the pipeline step-by-step.</p>
+            </header>
 
-        <!-- Progress Indicators -->
-        <div class="progress-container" id="progressContainer">
-            <!-- Injected via JS -->
-        </div>
-
-        <div class="step-container">
-            
-            <!-- Step 1 -->
-            <div class="step-card active" data-step="0">
-                <div class="step-icon-wrap icon-blue"><i class="bi bi-envelope-paper"></i></div>
-                <div class="step-content">
-                    <h2>Step 1: Data Ingestion</h2>
-                    <p>The system autonomously scans high-intent inbox threads for innovation, R&D, and patent-related keywords, filtering out noise.</p>
-                    <div class="feature-list">
-                        <div class="feat-item"><i class="bi bi-check-circle-fill text-blue" style="color:var(--blue)"></i> 7-Day Window Scan</div>
-                        <div class="feat-item"><i class="bi bi-check-circle-fill" style="color:var(--blue)"></i> Sender Authorization</div>
-                        <div class="feat-item"><i class="bi bi-check-circle-fill" style="color:var(--blue)"></i> Spam/Noise Filtering</div>
-                        <div class="feat-item"><i class="bi bi-check-circle-fill" style="color:var(--blue)"></i> Thread Deduplication</div>
-                    </div>
-                </div>
+            <!-- Progress Indicators -->
+            <div class="progress-container" id="progressContainer">
+                <!-- Injected via JS -->
             </div>
 
-            <!-- Step 2 -->
-            <div class="step-card" data-step="1">
-                <div class="step-icon-wrap icon-accent"><i class="bi bi-robot"></i></div>
-                <div class="step-content">
-                    <h2>Step 2: AI Qualification</h2>
-                    <p>Mistral AI analyzes raw email bodies to extract structured firmographics, scores each lead for potential fit, and generates outreach.</p>
-                    <div class="feature-list">
-                        <div class="feat-item"><i class="bi bi-stars" style="color:var(--accent)"></i> 14-Column Extraction</div>
-                        <div class="feat-item"><i class="bi bi-stars" style="color:var(--accent)"></i> Fit Scoring (0-100)</div>
-                        <div class="feat-item"><i class="bi bi-stars" style="color:var(--accent)"></i> AI Outreach Drafting</div>
-                        <div class="feat-item"><i class="bi bi-stars" style="color:var(--accent)"></i> JSON Validation</div>
+            <!-- Steps -->
+            <div class="step-container">
+                
+                <!-- Step 1: Data Ingestion -->
+                <div class="step-card active" data-step="0">
+                    <div class="step-icon-wrap icon-blue">
+                        <i class="bi bi-envelope-paper"></i>
+                    </div>
+                    <div class="step-content">
+                        <h2>Data Ingestion</h2>
+                        <p>The system autonomously scans high-intent inbox threads for innovation, R&D, and patent-related keywords, filtering out noise.</p>
+                        <div class="feature-list">
+                            <div class="feat-item">
+                                <i class="bi bi-check-circle-fill" style="color: var(--blue);"></i>
+                                <span>7-Day Window Scan</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-check-circle-fill" style="color: var(--blue);"></i>
+                                <span>Sender Authorization</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-check-circle-fill" style="color: var(--blue);"></i>
+                                <span>Spam/Noise Filtering</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-check-circle-fill" style="color: var(--blue);"></i>
+                                <span>Thread Deduplication</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Step 3 -->
-            <div class="step-card" data-step="2">
-                <div class="step-icon-wrap icon-amber"><i class="bi bi-wikipedia"></i></div>
-                <div class="step-content">
-                    <h2>Step 3: Intelligence Enrichment</h2>
-                    <p>Verified Wikipedia links are fetched to add industry context, employee counts, and headquarters data directly to the lead.</p>
-                    <div class="feature-list">
-                        <div class="feat-item"><i class="bi bi-search" style="color:var(--amber)"></i> URL Verification</div>
-                        <div class="feat-item"><i class="bi bi-database" style="color:var(--amber)"></i> Data Scraping</div>
-                        <div class="feat-item"><i class="bi bi-hdd" style="color:var(--amber)"></i> Local Caching</div>
-                        <div class="feat-item"><i class="bi bi-shield-check" style="color:var(--amber)"></i> Disambiguation Fix</div>
+                <!-- Step 2: AI Qualification -->
+                <div class="step-card" data-step="1">
+                    <div class="step-icon-wrap icon-accent">
+                        <i class="bi bi-robot"></i>
                     </div>
-                    <div class="alert-box">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <span>Smart Alerts: If a Wikipedia link is missing, a prominent warning icon is flagged in the dashboard for manual review.</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 4 -->
-            <div class="step-card" data-step="3">
-                <div class="step-icon-wrap icon-green"><i class="bi bi-layout-text-window-reverse"></i></div>
-                <div class="step-content">
-                    <h2>Step 4: Dashboard Action</h2>
-                    <p>Leads are synced to a secure, glassmorphic Node.js dashboard where teams can filter, review, and initiate outreach effortlessly.</p>
-                    <div class="feature-list">
-                        <div class="feat-item"><i class="bi bi-lock-fill" style="color:var(--green)"></i> OTP Secure Login</div>
-                        <div class="feat-item"><i class="bi bi-funnel-fill" style="color:var(--green)"></i> Advanced Filters</div>
-                        <div class="feat-item"><i class="bi bi-clipboard-check-fill" style="color:var(--green)"></i> Copy Outreach</div>
-                        <div class="feat-item"><i class="bi bi-bar-chart-fill" style="color:var(--green)"></i> Live Statistics</div>
+                    <div class="step-content">
+                        <h2>AI Qualification</h2>
+                        <p>Mistral AI analyzes raw email bodies to extract structured firmographics, scores each lead for potential fit, and generates outreach.</p>
+                        <div class="feature-list">
+                            <div class="feat-item">
+                                <i class="bi bi-stars" style="color: var(--accent-primary);"></i>
+                                <span>14-Column Extraction</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-stars" style="color: var(--accent-primary);"></i>
+                                <span>Fit Scoring (0-100)</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-stars" style="color: var(--accent-primary);"></i>
+                                <span>AI Outreach Drafting</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-stars" style="color: var(--accent-primary);"></i>
+                                <span>JSON Validation</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Step 3: Intelligence Enrichment -->
+                <div class="step-card" data-step="2">
+                    <div class="step-icon-wrap icon-amber">
+                        <i class="bi bi-wikipedia"></i>
+                    </div>
+                    <div class="step-content">
+                        <h2>Intelligence Enrichment</h2>
+                        <p>Verified Wikipedia links are fetched to add industry context, employee counts, and headquarters data directly to the lead.</p>
+                        <div class="feature-list">
+                            <div class="feat-item">
+                                <i class="bi bi-search" style="color: var(--amber);"></i>
+                                <span>URL Verification</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-database" style="color: var(--amber);"></i>
+                                <span>Data Scraping</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-hdd" style="color: var(--amber);"></i>
+                                <span>Local Caching</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-shield-check" style="color: var(--amber);"></i>
+                                <span>Disambiguation Fix</span>
+                            </div>
+                        </div>
+                        <div class="alert-box">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span><strong>Smart Alerts:</strong> If a Wikipedia link is missing, a warning icon is flagged in the dashboard for manual review.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Dashboard Action -->
+                <div class="step-card" data-step="3">
+                    <div class="step-icon-wrap icon-green">
+                        <i class="bi bi-layout-text-window-reverse"></i>
+                    </div>
+                    <div class="step-content">
+                        <h2>Dashboard Action</h2>
+                        <p>Leads are synced to a secure, glassmorphic Node.js dashboard where teams can filter, review, and initiate outreach effortlessly.</p>
+                        <div class="feature-list">
+                            <div class="feat-item">
+                                <i class="bi bi-lock-fill" style="color: var(--green);"></i>
+                                <span>OTP Secure Login</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-funnel-fill" style="color: var(--green);"></i>
+                                <span>Advanced Filters</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-clipboard-check-fill" style="color: var(--green);"></i>
+                                <span>Copy Outreach</span>
+                            </div>
+                            <div class="feat-item">
+                                <i class="bi bi-bar-chart-fill" style="color: var(--green);"></i>
+                                <span>Live Statistics</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-        </div>
-
-        <!-- Controls -->
-        <div class="nav-controls">
-            <button class="btn btn-prev" id="prevBtn" disabled><i class="bi bi-arrow-left"></i> Previous</button>
-            <button class="btn btn-next" id="nextBtn">Next Step <i class="bi bi-arrow-right"></i></button>
-            <button class="btn btn-finish" id="finishBtn" onclick="window.location.reload()"><i class="bi bi-check2-circle"></i> Restart Tour</button>
+            <!-- Navigation Controls -->
+            <div class="nav-controls">
+                <button class="btn btn-prev" id="prevBtn" disabled>
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Previous</span>
+                </button>
+                <span class="step-counter"><span id="currentStep">1</span> of <span id="totalSteps">4</span></span>
+                <button class="btn btn-next" id="nextBtn">
+                    <span>Next Step</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+                <button class="btn btn-finish" id="finishBtn">
+                    <i class="bi bi-check2-circle"></i>
+                    <span>Restart Tour</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -330,23 +698,30 @@
         const nextBtn = document.getElementById('nextBtn');
         const finishBtn = document.getElementById('finishBtn');
         const progressContainer = document.getElementById('progressContainer');
+        const currentStepSpan = document.getElementById('currentStep');
+        const totalStepsSpan = document.getElementById('totalSteps');
         
         let currentStep = 0;
         const totalSteps = cards.length;
 
         // Initialize Progress Bar
-        for (let i = 0; i < totalSteps; i++) {
-            const dot = document.createElement('div');
-            dot.className = `progress-dot ${i === 0 ? 'active' : ''}`;
-            dot.id = `dot-${i}`;
-            progressContainer.appendChild(dot);
-            
-            if (i < totalSteps - 1) {
-                const line = document.createElement('div');
-                line.className = 'progress-line';
-                line.id = `line-${i}`;
-                progressContainer.appendChild(line);
+        function initializeProgress() {
+            for (let i = 0; i < totalSteps; i++) {
+                const dot = document.createElement('div');
+                dot.className = `progress-dot ${i === 0 ? 'active' : ''}`;
+                dot.id = `dot-${i}`;
+                dot.setAttribute('data-step', i);
+                dot.addEventListener('click', () => goToStep(i));
+                progressContainer.appendChild(dot);
+                
+                if (i < totalSteps - 1) {
+                    const line = document.createElement('div');
+                    line.className = 'progress-line';
+                    line.id = `line-${i}`;
+                    progressContainer.appendChild(line);
+                }
             }
+            totalStepsSpan.textContent = totalSteps;
         }
 
         function updateUI() {
@@ -363,25 +738,41 @@
             // Update Progress Dots & Lines
             for (let i = 0; i < totalSteps; i++) {
                 const dot = document.getElementById(`dot-${i}`);
-                if (i <= currentStep) dot.classList.add('active');
-                else dot.classList.remove('active');
+                if (i <= currentStep) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
 
                 if (i < totalSteps - 1) {
                     const line = document.getElementById(`line-${i}`);
-                    if (i < currentStep) line.classList.add('active');
-                    else line.classList.remove('active');
+                    if (i < currentStep) {
+                        line.classList.add('active');
+                    } else {
+                        line.classList.remove('active');
+                    }
                 }
             }
 
-            // Update Buttons
+            // Update Step Counter
+            currentStepSpan.textContent = currentStep + 1;
+
+            // Update Button States
             prevBtn.disabled = currentStep === 0;
             
             if (currentStep === totalSteps - 1) {
                 nextBtn.style.display = 'none';
-                finishBtn.style.display = 'flex';
+                finishBtn.style.display = 'inline-flex';
             } else {
-                nextBtn.style.display = 'flex';
+                nextBtn.style.display = 'inline-flex';
                 finishBtn.style.display = 'none';
+            }
+        }
+
+        function goToStep(stepIndex) {
+            if (stepIndex >= 0 && stepIndex < totalSteps) {
+                currentStep = stepIndex;
+                updateUI();
             }
         }
 
@@ -399,7 +790,24 @@
             }
         });
 
-        // Initialize UI state
+        finishBtn.addEventListener('click', () => {
+            currentStep = 0;
+            updateUI();
+        });
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentStep < totalSteps - 1) {
+                currentStep++;
+                updateUI();
+            } else if (e.key === 'ArrowLeft' && currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+
+        // Initialize
+        initializeProgress();
         updateUI();
     </script>
 </body>
