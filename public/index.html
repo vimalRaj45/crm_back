@@ -222,6 +222,15 @@
         }
         .btn-reset:hover { background: rgba(255,255,255,0.08); color: var(--text); }
 
+        .btn-apply {
+            padding: 10px 16px; font-size: 12px; font-weight: 600;
+            background: var(--accent); color: white;
+            border: none;
+            border-radius: 8px; cursor: pointer; font-family: inherit;
+            transition: opacity .2s; white-space: nowrap; flex: 1; align-self: end;
+        }
+        .btn-apply:hover { opacity: 0.9; }
+
         .btn-toggle-adv {
             background: none; border: none;
             color: var(--accent-light); font-size: 12px;
@@ -519,7 +528,10 @@
                         <option value="tech">Technology</option>
                     </select>
                 </div>
-                <button class="btn-reset" id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+                <div style="display:flex; gap:8px; align-self: end;">
+                    <button class="btn-apply" id="applyBtn"><i class="bi bi-funnel"></i> Apply</button>
+                    <button class="btn-reset" id="resetBtn" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></button>
+                </div>
             </div>
 
             <!-- Toggle to show advanced -->
@@ -977,9 +989,9 @@
     });
 
     // Attach listeners
-    [searchBox, fitSearch].forEach(el => el.addEventListener('input', applyFilters));
-    [scoreMin, scoreMax, dateFrom, dateTo].forEach(el => el.addEventListener('change', applyFilters));
-    [sectorFilter, positionFilter].forEach(el => el.addEventListener('change', applyFilters));
+    const applyBtn = $('applyBtn');
+    applyBtn.addEventListener('click', applyFilters);
+    [searchBox, fitSearch].forEach(el => el.addEventListener('keypress', e => { if(e.key === 'Enter') applyFilters(); }));
 
     resetBtn.addEventListener('click', () => {
         searchBox.value = ''; scoreMin.value = ''; scoreMax.value = '';
@@ -996,7 +1008,7 @@
 
         // 1. Global search
         const q = searchBox.value.trim().toLowerCase();
-        if (q) f = f.filter(l => Object.values(l).some(v => v.toLowerCase().includes(q)));
+        if (q) f = f.filter(l => Object.values(l).some(v => String(v).toLowerCase().includes(q)));
 
         // 2. Score range
         const sMin = parseInt(scoreMin.value);
