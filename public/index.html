@@ -596,23 +596,28 @@
     </div>
 
 <script>
-    // ─── Auth Gate ────────────────────────────────
+    // ─── Auth Gate (localStorage-persistent) ──────
+    // Only redirect if NO token exists. On refresh, stay logged in.
+    // Only explicit Logout clears session.
     const TOKEN = localStorage.getItem('spirelia_token');
     if (!TOKEN) window.location.href = '/login.html';
 
     const AUTH = { Authorization: 'Bearer ' + TOKEN };
 
-    // Check auth on load
+    // Show cached email immediately (no redirect on failure)
     (async () => {
+        const cachedEmail = localStorage.getItem('spirelia_email');
+        if (cachedEmail) document.getElementById('userEmail').textContent = cachedEmail;
         try {
             const r = await fetch('/api/check-auth', { headers: AUTH });
-            if (!r.ok) throw new Error();
-            const d = await r.json();
-            document.getElementById('userEmail').textContent = d.email;
+            if (r.ok) {
+                const d = await r.json();
+                document.getElementById('userEmail').textContent = d.email;
+                localStorage.setItem('spirelia_email', d.email);
+            }
+            // If NOT ok, do nothing — stay on dashboard with cached session
         } catch {
-            localStorage.removeItem('spirelia_token');
-            localStorage.removeItem('spirelia_email');
-            window.location.href = '/login.html';
+            // Network error — stay on dashboard, don't redirect
         }
     })();
 
@@ -638,9 +643,9 @@
         try {
             const res = await fetch('/api/leads', { headers: AUTH });
             if (res.status === 401) {
-                localStorage.removeItem('spirelia_token');
-                window.location.href = '/login.html';
-                return;
+                // Session expired on server — show error but DON'T redirect
+                // User must explicitly click Logout to clear session
+                throw new Error('Session expired on server. Please logout and login again.');
             }
             if (!res.ok) {
                 const e = await res.json().catch(() => ({}));
