@@ -793,7 +793,7 @@
         }
 
         // All fields
-        const skipInBody = ['Score', 'Fit Reason'];
+        const skipInBody = ['Score', 'Fit Reason', 'Notes'];
         allHeaders.filter(h => !skipInBody.includes(h)).forEach(h => {
             const v = lead[h] || '';
             const icon = FIELD_ICONS[h] || 'bi-dot';
@@ -813,12 +813,6 @@
                     ${esc(v)}
                     <button onclick="copyToClipboard(this, \`${v.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="position:absolute; top:8px; right:8px; background:var(--accent); color:white; border:none; border-radius:4px; padding:4px 8px; font-size:10px; cursor:pointer; font-family:sans-serif;"><i class="bi bi-clipboard"></i> Copy</button>
                 </div>`;
-            } else if (h === 'Notes') {
-                const sheetRow = lead._sheetRow;
-                valHtml = `<div style="position:relative;">
-                    <textarea id="notes-${sheetRow}" style="width:100%; min-height:80px; background:rgba(0,0,0,0.1); border:1px solid var(--border); border-radius:8px; padding:10px; color:var(--text); font-family:inherit; font-size:13px; resize:vertical;" placeholder="Add notes here...">${v ? esc(v) : ''}</textarea>
-                    <button onclick="saveNotes(${sheetRow}, this)" style="margin-top:6px; background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600;"><i class="bi bi-save"></i> Save Notes</button>
-                </div>`;
             } else {
                 valHtml = esc(v);
             }
@@ -831,6 +825,24 @@
                 </div>
             </div>`;
         });
+
+        // Always render Notes at the very bottom
+        const notesValue = lead['Notes'] || '';
+        const sheetRow = lead._sheetRow;
+        if (sheetRow) {
+            html += `<div class="modal-field">
+                <div class="modal-field-icon"><i class="bi bi-journal-text"></i></div>
+                <div class="modal-field-content">
+                    <div class="modal-field-label">Notes</div>
+                    <div class="modal-field-value">
+                        <div style="position:relative;">
+                            <textarea id="notes-${sheetRow}" style="width:100%; min-height:80px; background:rgba(0,0,0,0.1); border:1px solid var(--border); border-radius:8px; padding:10px; color:var(--text); font-family:inherit; font-size:13px; resize:vertical;" placeholder="Add private notes here...">${notesValue ? esc(notesValue) : ''}</textarea>
+                            <button onclick="saveNotes(${sheetRow}, this)" style="margin-top:6px; background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600;"><i class="bi bi-save"></i> Save Notes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
 
         modalBody.innerHTML = html;
         modalOverlay.classList.add('open');
