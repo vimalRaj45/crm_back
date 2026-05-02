@@ -588,7 +588,7 @@
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-card" id="modalCard">
             <div class="modal-header">
-                <h2><i class="bi bi-building"></i> <span id="modalTitle">Lead Detail</span></h2>
+                <h2><i class="bi bi-building" id="modalHeaderIcon"></i> <span id="modalTitle">Lead Detail</span></h2>
                 <button class="modal-close" id="modalClose"><i class="bi bi-x-lg"></i></button>
             </div>
             <div class="modal-body" id="modalBody"></div>
@@ -746,8 +746,17 @@
         if (!lead) return;
 
         const company = lead['Company'] || 'Lead Detail';
-        const position = lead['Position'] || '';
         modalTitle.textContent = company;
+
+        // Update header icon
+        const headerIcon = $('modalHeaderIcon');
+        if (showWikiWarning) {
+            headerIcon.className = 'bi bi-exclamation-triangle-fill';
+            headerIcon.style.color = 'var(--amber)';
+        } else {
+            headerIcon.className = 'bi bi-building';
+            headerIcon.style.color = '';
+        }
 
         let html = '';
 
