@@ -550,8 +550,12 @@
                     <input type="text" id="fitSearch" placeholder="patent, R&D, innovation…">
                 </div>
                 <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-calendar-range"></i> Since Date</div>
-                    <input type="date" id="dateFrom">
+                    <div class="filter-label"><i class="bi bi-calendar-range"></i> Date Range</div>
+                    <div class="score-range-wrap">
+                        <input type="date" id="dateFrom" style="padding:10px 4px" title="From Date">
+                        <span class="score-range-sep">to</span>
+                        <input type="date" id="dateTo" style="padding:10px 4px" title="To Date">
+                    </div>
                 </div>
             </div>
 
@@ -731,7 +735,7 @@
         'Wikipedia Link': 'bi-wikipedia',
         'Message ID': 'bi-hash',
         'Fit Reason': 'bi-lightbulb',
-        'AI Outreach Draft': 'bi-pencil-square'
+        'Outreach Msg': 'bi-pencil-square'
     };
 
     // ─── Lead Detail Modal ────────────────────────
@@ -797,7 +801,7 @@
             } else if (h === 'Domain' && v.includes('.')) {
                 const domainUrl = v.startsWith('http') ? v : 'https://' + v;
                 valHtml = `<a href="${esc(domainUrl)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(v)}</a>`;
-            } else if (h === 'AI Outreach Draft') {
+            } else if (h === 'Outreach Msg') {
                 valHtml = `<div style="background:rgba(124,58,237,0.05); padding:12px; border-radius:8px; border:1px solid rgba(124,58,237,0.1); white-space:pre-wrap; font-family:monospace; font-size:12px; position:relative;">
                     ${esc(v)}
                     <button onclick="copyToClipboard(this, \`${v.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="position:absolute; top:8px; right:8px; background:var(--accent); color:white; border:none; border-radius:4px; padding:4px 8px; font-size:10px; cursor:pointer; font-family:sans-serif;"><i class="bi bi-clipboard"></i> Copy</button>
@@ -869,6 +873,7 @@
     const contactToggle = $('contactToggle');
     const fitSearch     = $('fitSearch');
     const dateFrom      = $('dateFrom');
+    const dateTo        = $('dateTo');
     const toggleAdv     = $('toggleAdv');
     const advRow        = $('advRow');
     const filterCount   = $('filterCount');
@@ -911,13 +916,13 @@
 
     // Attach listeners
     [searchBox, fitSearch].forEach(el => el.addEventListener('input', applyFilters));
-    [scoreMin, scoreMax, dateFrom].forEach(el => el.addEventListener('change', applyFilters));
+    [scoreMin, scoreMax, dateFrom, dateTo].forEach(el => el.addEventListener('change', applyFilters));
     [sectorFilter, positionFilter].forEach(el => el.addEventListener('change', applyFilters));
 
     resetBtn.addEventListener('click', () => {
         searchBox.value = ''; scoreMin.value = ''; scoreMax.value = '';
         sectorFilter.value = ''; positionFilter.value = '';
-        fitSearch.value = ''; dateFrom.value = '';
+        fitSearch.value = ''; dateFrom.value = ''; dateTo.value = '';
         contactOnly = false;
         contactToggle.classList.remove('on');
         filterCount.textContent = '';
@@ -968,6 +973,7 @@
 
         // 7. Date range
         const df = dateFrom.value;
+        const dt = dateTo.value;
         if (df) {
             const since = new Date(df);
             f = f.filter(l => {
@@ -975,9 +981,17 @@
                 return !isNaN(d) && d >= since;
             });
         }
+        if (dt) {
+            const until = new Date(dt);
+            until.setHours(23, 59, 59, 999);
+            f = f.filter(l => {
+                const d = new Date(l['Date']);
+                return !isNaN(d) && d <= until;
+            });
+        }
 
         renderTable(allHeaders, f);
-        const active = [q, !isNaN(sMin), !isNaN(sMax), sec, pos, contactOnly, fk, df].filter(Boolean).length;
+        const active = [q, !isNaN(sMin), !isNaN(sMax), sec, pos, contactOnly, fk, df, dt].filter(Boolean).length;
         filterCount.textContent = active ? `${f.length} lead${f.length!==1?'s':''} matching ${active} filter${active!==1?'s':''}` : '';
     }
 

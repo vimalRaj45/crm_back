@@ -13,7 +13,7 @@ Currently, you are running on 100% free tiers: Google Apps Script (Personal), Mi
     *   **Capacity**: You can process roughly **50 to 100 emails per run** (depending on how fast Mistral responds) before the 6-minute timeout hits. Over a whole day, you can comfortably process **~500 to 800 leads daily** without paying Google.
 *   **Mistral AI API (Free Tier)**:
     *   **Limit**: Mistral's free tier has strict rate limits (usually 1 request per second) and monthly caps. If you process emails too quickly, you get a `429 Too Many Requests` error (which your script handles by pausing).
-    *   **Capacity**: Good for testing and low volume. Handling a batch of 50 emails will take a few minutes due to the built-in pauses to respect rate limits.
+    *   **Capacity**: Good medium volume. Handling a batch of 50 emails will take a few minutes due to the built-in pauses to respect rate limits.
 *   **Render Server (Dashboard Backend)**:
     *   **Limit**: Free tier provides 512MB RAM and "spins down" (goes to sleep) after 15 minutes of inactivity.
     *   **Capacity**: Perfect for a small team (1-5 users). The only downside is a **30-50 second delay** when loading the dashboard if no one has visited it recently (Cold Start).

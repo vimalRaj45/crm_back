@@ -37,18 +37,18 @@ var CONFIG = {
   MAX_API_RETRIES: 3
 };
 
-// COLUMN INDICES (0-based) - 14 COLUMNS for Leads sheet
+// COLUMN INDICES (0-based) - 15 COLUMNS for Leads sheet
 var COL = {
   DATE: 0, COMPANY: 1, POSITION: 2, ROLE_SUMMARY: 3, COMPANY_BIO: 4,
   POSTED: 5, DOMAIN: 6, EMAIL: 7, LINKEDIN: 8, SCORE: 9,
-  DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13
+  DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13, OUTREACH_MSG: 14
 };
 
-// HEADERS for Leads sheet (14 columns)
+// HEADERS for Leads sheet (15 columns)
 var HEADERS = [
   "Date", "Company", "Position", "Role Summary", "Company Bio", "Posted",
   "Domain", "Email", "LinkedIn", "Score", "Decision Maker Link",
-  "Wikipedia Link", "Message ID", "Fit Reason"
+  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg"
 ];
 
 // ✅ HEADERS for Filtered_Leads sheet (14 cols + Filter_Reason)
@@ -106,7 +106,7 @@ function initializeCRM() {
     var needsUpdate = true;
     if (sheet.getLastColumn() > 0 && sheet.getLastRow() > 0) {
       var currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[currentHeaders.length - 1] !== "Fit Reason";
+      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[currentHeaders.length - 1] !== "Outreach Msg";
     }
     if (needsUpdate) {
       sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
@@ -116,6 +116,7 @@ function initializeCRM() {
       sheet.setFrozenRows(1);
       sheet.autoResizeColumns(1, HEADERS.length);
       sheet.setColumnWidth(COL.FIT_REASON + 1, 320);
+      sheet.setColumnWidth(COL.OUTREACH_MSG + 1, 400);
       var scoreRange = sheet.getRange(2, COL.SCORE + 1, 1000, 1);
       var rule = SpreadsheetApp.newDataValidation().requireNumberBetween(0, 100).build();
       scoreRange.setDataValidation(rule);
@@ -140,8 +141,8 @@ function initializeCRM() {
         .setHorizontalAlignment("center");
       filteredSheet.setFrozenRows(1);
       filteredSheet.autoResizeColumns(1, FILTERED_HEADERS.length);
-      filteredSheet.setColumnWidth(14, 250); // Filter_Reason column
-      filteredSheet.setColumnWidth(15, 180); // Filtered_At column
+      filteredSheet.setColumnWidth(15, 250); // Filter_Reason column
+      filteredSheet.setColumnWidth(16, 180); // Filtered_At column
       log("INFO", "Filtered_Leads sheet headers created");
     }
     
@@ -269,6 +270,7 @@ function saveFilteredLead(lead, msgId, msgDate, filterReason) {
       lead.wikipedia || "",
       msgId || "",
       lead.fit_reason || "",
+      lead.outreach_msg || "",
       filterReason, // ✅ WHY it was filtered
       Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") // ✅ When filtered
     ];
@@ -442,7 +444,8 @@ function fetchAndQualifyLeads() {
               msg.getDate(), l.company_name || "N/A", l.position || "N/A",
               l.role_summary || "N/A", l.company_bio || "N/A", l.posted_date || "",
               l.domain || "", l.email || "", l.linkedin || "", l.score || "",
-              l.decision_link || "", l.wikipedia || "", msgId, l.fit_reason || ""
+              l.decision_link || "", l.wikipedia || "", msgId, l.fit_reason || "",
+              l.outreach_msg || ""
             ];
             sheet.appendRow(newRow);
             SpreadsheetApp.flush();
@@ -515,10 +518,21 @@ function generateQuickSignature(bodyPreview, subject) {
 // 🔑 MISTRAL AI API CALL
 // ═══════════════════════════════════════════════════════════
 
+function sanitizeEmailBody(body) {
+  if (!body) return body;
+  return body
+    // Remove email addresses
+    .replace(/[\w.-]+@[\w.-]+\.\w+/g, "[EMAIL]")
+    // Remove phone numbers only
+    .replace(/\+?\d[\d\s\-\(\)]{8,}/g, "[PHONE]");
+}
+
 function callMistralAI(emailBody, msgId) {
   log("DEBUG", "Fetching Mistral API key for MsgID: " + msgId);
   var apiKey = PropertiesService.getScriptProperties().getProperty("MISTRAL_API_KEY");
   if (!apiKey) { log("ERROR", "Missing MISTRAL_API_KEY"); return []; }
+  
+  emailBody = sanitizeEmailBody(emailBody);
   
   var url = "https://api.mistral.ai/v1/chat/completions";
   var prompt = buildPrompt(emailBody);
@@ -568,11 +582,12 @@ function buildPrompt(emailBody) {
     "5. posted_date: Original posting date if mentioned (string or empty)\n" +
     "6. domain: Official website like \"tesla.com\" (string or empty)\n" +
     "7. email: Contact email if found or guess format like \"careers@company.com\" (string or empty)\n" +
-    "8. linkedin: Company LinkedIn URL like \"https://linkedin.com/company/tesla\" (string or empty)\n" +
+    "8. linkedin: Official Company LinkedIn URL in format: https://www.linkedin.com/company/[vanity-name]. RULES: 1. Verify it is correct. 2. Remove legal suffixes. EXAMPLES: 'Tesla Inc' -> https://www.linkedin.com/company/tesla, 'Microsoft Corporation' -> https://www.linkedin.com/company/microsoft, '3M' -> https://www.linkedin.com/company/3m, 'GSK' -> https://www.linkedin.com/company/gsk (string or empty)\n" +
     "9. score: Fit score 0-100 based on: Manufacturing/Auto/Aerospace/Pharma/MedTech/GCC + 500+ employees + R&D signals (number)\n" +
     "10. fit_reason: CONCISE 1-sentence explanation WHY this lead matches. MUST cite: (1) sector match, (2) employee size signal if available, (3) specific R&D keyword found in email.\n" +
-    "11. decision_link: Pre-built LinkedIn search URL for CTO/VP R&D at this company (string or empty)\n" +
-    "12. wikipedia: Wikipedia URL if company has one (string or empty)\n\n" +
+    "11. decision_link: LinkedIn URL to see all employees/people of this company. Use the exact same vanity-name from the linkedin field and append /people/ (e.g., https://www.linkedin.com/company/tesla/people/) (string or empty)\n" +
+    "12. wikipedia: Wikipedia URL if company has one (string or empty)\n" +
+    "13. outreach_msg: Company specific outreach message, personalized based on their profile and R&D signals (string)\n\n" +
     "SECTOR FILTER (ONLY extract if matches):\n" +
     "- Manufacturing, Automotive, Aerospace, Pharma, MedTech, Global Capability Centers (GCC)\n" +
     "- Companies with 500+ employees\n" +
@@ -580,7 +595,7 @@ function buildPrompt(emailBody) {
     "EXCLUDE:\n" +
     "- IT Services (TCS, Infosys, Wipro, etc.), Trading, Startups <5 years, Distributors, Retail chains, Law firms, Consulting firms, IP services\n\n" +
     "OUTPUT FORMAT (STRICT JSON ARRAY):\n" +
-    "[{\"company_name\":\"String\",\"position\":\"String\",\"role_summary\":\"String\",\"company_bio\":\"String\",\"posted_date\":\"String\",\"domain\":\"String\",\"email\":\"String\",\"linkedin\":\"String\",\"score\":85,\"fit_reason\":\"String\",\"decision_link\":\"String\",\"wikipedia\":\"String\"}]\n\n" +
+    "[{\"company_name\":\"String\",\"position\":\"String\",\"role_summary\":\"String\",\"company_bio\":\"String\",\"posted_date\":\"String\",\"domain\":\"String\",\"email\":\"String\",\"linkedin\":\"String\",\"score\":85,\"fit_reason\":\"String\",\"decision_link\":\"String\",\"wikipedia\":\"String\",\"outreach_msg\":\"String\"}]\n\n" +
     "EMAIL TO ANALYZE:\n" + emailBody;
 }
 
@@ -627,6 +642,7 @@ function parseAIResponse(rawResponse, msgId) {
         linkedin: l.linkedin || l.linkedin_url || buildLinkedIn(l.company_name) || "",
         score: typeof l.score === "number" ? l.score : (l.fit_score || l.relevance_score || ""),
         fit_reason: fitReason,
+        outreach_msg: l.outreach_msg || l.outreach || "",
         decision_link: l.decision_link || l.cto_link || buildDecisionLink(l.company_name) || "",
         wikipedia: wikiUrl
       });
@@ -746,11 +762,14 @@ function guessEmail(domain) {
 
 function buildLinkedIn(companyName) {
   if (!companyName || companyName === "N/A") return "";
-  var slug = companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return "https://linkedin.com/company/" + slug;
+  var cleanName = companyName.toLowerCase().replace(/\b(inc|ltd|llc|corp|corporation|limited|company|group)\b\.?/gi, "").trim();
+  var slug = cleanName.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return "https://www.linkedin.com/company/" + slug;
 }
 
 function buildDecisionLink(companyName) {
   if (!companyName || companyName === "N/A") return "";
-  return "https://linkedin.com/search/results/people/?keywords=CTO%20OR%20VP%20R&D&company=" + encodeURIComponent(companyName);
+  var cleanName = companyName.toLowerCase().replace(/\b(inc|ltd|llc|corp|corporation|limited|company|group)\b\.?/gi, "").trim();
+  var slug = cleanName.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return "https://www.linkedin.com/company/" + slug + "/people/";
 }
