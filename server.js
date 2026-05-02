@@ -165,7 +165,7 @@ app.get('/api/leads', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const result = await sheets.spreadsheets.values.get({
             spreadsheetId: SHEET_ID,
-            range: 'Leads!A1:N',
+            range: 'Leads!A1:O',
         });
 
         const rows = result.data.values;

@@ -700,6 +700,9 @@
                     const cls = n >= 90 ? 'score-high' : n >= 70 ? 'score-mid' : 'score-low';
                     return `<td><span class="score-badge ${cls}">${esc(v)}</span></td>`;
                 }
+                if (h === 'Wikipedia Link' && !v) {
+                    return `<td style="text-align:center"><i class="bi bi-exclamation-triangle-fill" style="color:var(--amber); font-size:16px; cursor:pointer;" title="No Wikipedia Data" onclick="openLeadModal(${idx}, true); event.stopPropagation();"></i></td>`;
+                }
                 if (v.startsWith('http')) {
                     const label = v.length > 35 ? v.slice(0, 35) + '…' : v;
                     return `<td><a href="${esc(v)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(label)}</a></td>`;
@@ -727,7 +730,8 @@
         'Decision Maker Link': 'bi-person-lines-fill',
         'Wikipedia Link': 'bi-wikipedia',
         'Message ID': 'bi-hash',
-        'Fit Reason': 'bi-lightbulb'
+        'Fit Reason': 'bi-lightbulb',
+        'AI Outreach Draft': 'bi-pencil-square'
     };
 
     // ─── Lead Detail Modal ────────────────────────
@@ -737,7 +741,7 @@
     const modalTitle   = $('modalTitle');
     const modalBody    = $('modalBody');
 
-    function openLeadModal(idx) {
+    function openLeadModal(idx, showWikiWarning = false) {
         const lead = currentFilteredLeads[idx];
         if (!lead) return;
 
@@ -746,6 +750,13 @@
         modalTitle.textContent = company;
 
         let html = '';
+
+        if (showWikiWarning) {
+            html += `<div style="background:rgba(245,158,11,0.1); color:var(--amber); border:1px solid rgba(245,158,11,0.2); padding:12px 16px; border-radius:12px; margin-bottom:16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:10px;">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size:18px;"></i>
+                <span>No Wikipedia intelligence data found for this company.</span>
+            </div>`;
+        }
 
         // Score + Fit Reason hero row
         const score = parseInt(lead['Score']);
@@ -777,6 +788,11 @@
             } else if (h === 'Domain' && v.includes('.')) {
                 const domainUrl = v.startsWith('http') ? v : 'https://' + v;
                 valHtml = `<a href="${esc(domainUrl)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(v)}</a>`;
+            } else if (h === 'AI Outreach Draft') {
+                valHtml = `<div style="background:rgba(124,58,237,0.05); padding:12px; border-radius:8px; border:1px solid rgba(124,58,237,0.1); white-space:pre-wrap; font-family:monospace; font-size:12px; position:relative;">
+                    ${esc(v)}
+                    <button onclick="copyToClipboard(this, \`${v.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="position:absolute; top:8px; right:8px; background:var(--accent); color:white; border:none; border-radius:4px; padding:4px 8px; font-size:10px; cursor:pointer; font-family:sans-serif;"><i class="bi bi-clipboard"></i> Copy</button>
+                </div>`;
             } else {
                 valHtml = esc(v);
             }
@@ -820,6 +836,21 @@
 
     // ─── Escape ───────────────────────────────────
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    async function copyToClipboard(btn, text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            const oldHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            btn.style.background = 'var(--green)';
+            setTimeout(() => {
+                btn.innerHTML = oldHtml;
+                btn.style.background = 'var(--accent)';
+            }, 2000);
+        } catch (err) {
+            console.error('Copy failed', err);
+        }
+    }
 
     // ─── Filter Logic ─────────────────────────────
     const scoreMin      = $('scoreMin');
