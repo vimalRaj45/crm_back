@@ -807,6 +807,12 @@
                     ${esc(v)}
                     <button onclick="copyToClipboard(this, \`${v.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)" style="position:absolute; top:8px; right:8px; background:var(--accent); color:white; border:none; border-radius:4px; padding:4px 8px; font-size:10px; cursor:pointer; font-family:sans-serif;"><i class="bi bi-clipboard"></i> Copy</button>
                 </div>`;
+            } else if (h === 'Notes') {
+                const sheetRow = lead._sheetRow;
+                valHtml = `<div style="position:relative;">
+                    <textarea id="notes-${sheetRow}" style="width:100%; min-height:80px; background:rgba(0,0,0,0.1); border:1px solid var(--border); border-radius:8px; padding:10px; color:var(--text); font-family:inherit; font-size:13px; resize:vertical;" placeholder="Add notes here...">${v ? esc(v) : ''}</textarea>
+                    <button onclick="saveNotes(${sheetRow}, this)" style="margin-top:6px; background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600;"><i class="bi bi-save"></i> Save Notes</button>
+                </div>`;
             } else {
                 valHtml = esc(v);
             }
@@ -864,6 +870,41 @@
         } catch (err) {
             console.error('Copy failed', err);
         }
+    }
+
+    async function saveNotes(sheetRow, btn) {
+        const txt = document.getElementById('notes-' + sheetRow);
+        if (!txt) return;
+        const notes = txt.value;
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/leads/notes', {
+                method: 'POST',
+                headers: { ...AUTH, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sheetRow, notes })
+            });
+            if (!res.ok) throw new Error('Failed to save');
+            
+            // Update local state so it doesn't revert if they reopen modal
+            const lead = allLeads.find(l => l._sheetRow === sheetRow);
+            if (lead) lead['Notes'] = notes;
+
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Saved!';
+            btn.style.background = 'var(--green)';
+        } catch (e) {
+            btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error';
+            btn.style.background = '#ef4444';
+            console.error(e);
+        }
+
+        setTimeout(() => {
+            btn.innerHTML = oldHtml;
+            btn.style.background = 'var(--accent)';
+            btn.disabled = false;
+        }, 2000);
     }
 
     // ─── Filter Logic ─────────────────────────────

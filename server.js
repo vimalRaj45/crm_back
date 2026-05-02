@@ -172,8 +172,8 @@ app.get('/api/leads', requireAuth, async (req, res) => {
         if (!rows || rows.length === 0) return res.json({ headers: [], leads: [], total: 0 });
 
         const headers = rows[0];
-        const leads = rows.slice(1).map(row => {
-            const obj = {};
+        const leads = rows.slice(1).map((row, idx) => {
+            const obj = { _sheetRow: idx + 2 }; // Sheet row is 1-indexed, +1 for header = idx+2
             headers.forEach((h, i) => { obj[h] = row[i] || ''; });
             return obj;
         });
@@ -181,6 +181,32 @@ app.get('/api/leads', requireAuth, async (req, res) => {
     } catch (err) {
         console.error("❌ Sheet error:", err.message);
         res.status(500).json({ error: err.message, headers: [], leads: [], total: 0 });
+    }
+});
+
+// ─── Save Notes (Protected) ──────────────────────
+app.post('/api/leads/notes', requireAuth, async (req, res) => {
+    try {
+        const { sheetRow, notes } = req.body;
+        if (!sheetRow) return res.status(400).json({ error: 'Missing sheet row' });
+
+        const auth = new google.auth.GoogleAuth({
+            keyFile: SERVICE_ACCOUNT,
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+        const sheets = google.sheets({ version: 'v4', auth });
+        
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: SHEET_ID,
+            range: `Leads!P${sheetRow}`, // Column P is the 'Notes' column
+            valueInputOption: 'USER_ENTERED',
+            requestBody: { values: [[notes || '']] }
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("❌ Save notes error:", err.message);
+        res.status(500).json({ error: 'Failed to save notes' });
     }
 });
 
