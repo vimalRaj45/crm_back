@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spirelia Intelligence — Login</title>
     <meta name="description" content="Secure OTP login for Spirelia Lead Intelligence CRM">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -228,7 +229,7 @@
         const token = localStorage.getItem('spirelia_token');
         if (!token) return;
         try {
-            const r = await fetch('/api/check-auth', { headers: { Authorization: 'Bearer ' + token } });
+            const r = await fetch('https://crm-back-x4c6.onrender.com/api/check-auth', { headers: { Authorization: 'Bearer ' + token } });
             if (r.ok) window.location.href = '/';
         } catch {}
     })();
@@ -282,7 +283,7 @@
 
         setLoading(sendBtn, true);
         try {
-            const r = await fetch('/api/send-otp', {
+            const r = await fetch('https://crm-back-x4c6.onrender.com/api/send-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
@@ -308,7 +309,7 @@
 
         setLoading(verifyBtn, true);
         try {
-            const r = await fetch('/api/verify-otp', {
+            const r = await fetch('https://crm-back-x4c6.onrender.com/api/verify-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: currentEmail, otp }),

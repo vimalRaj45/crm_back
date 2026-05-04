@@ -1,40 +1,42 @@
 // CRM-V2: Master Edition - Production Ready + Filtered Leads Audit
-// ✅ Mistral AI Integration (Single Key)
-// ✅ Filtered leads stored in "Filtered_Leads" sheet with reason
-// ✅ Wikipedia Disambiguation Fix + Verified URLs Only
-// ✅ Lead Validation + Expanded Noise Keywords
-// ✅ 14-column CRM, Smart Dedup, AI Logging, fit_reason
+// Mistral AI Integration (Single Key)
+// Filtered leads stored in "Filtered_Leads" sheet with reason
+// Wikipedia Disambiguation Fix + Verified URLs Only
+// Lead Validation + Expanded Noise Keywords
+// 14-column CRM, Smart Dedup, AI Logging, fit_reason
+// Rate Limit Wait: 24s base (for Google Workspace 30-min limit)
+// CONFIG UPDATED: MAX_SEARCH_THREADS=500, MAX_PROCESS_MESSAGES=15
 
 // ═══════════════════════════════════════════════════════════
 // GLOBAL CONFIGURATION
 // ═══════════════════════════════════════════════════════════
 
-var SHEET_ID = "1VJtX69Wn4lDryad8L6NkpMylnlys_tPJqYn-b2Oa_aI";
+var SHEET_ID = "1R7aOXVtMkhm6qgEeTV6HpOShGjWIaRL3ydHBEhujXuc";
 var SHEET_NAME = "Leads";
 var FILTERED_SHEET_NAME = "Filtered_Leads"; // ✅ NEW: Track rejected leads
 var LOG_SHEET_NAME = "Logs";
 var LOG_PREFIX = "[CRM-V2]";
 
 var CONFIG = {
-  MAX_SEARCH_THREADS: 200,
-  MAX_PROCESS_MESSAGES: 200,
+  MAX_SEARCH_THREADS: 500,   // ✅ Scans up to 500 threads to find valid messages
+  MAX_PROCESS_MESSAGES: 15,  // ✅ Stops after processing exactly 15 emails per run
   SLEEP_MS: 2500,
   NOISE_KEYWORDS: [
     "tcs", "infosys", "wipro", "hcl", "cognizant", "accenture", 
     "starbucks", "uber", "delivery", "distributor",
-    "law firm", "legal services", "ip consulting", "patent attorney",
+    "law firm", "legal services", "ip consulting",
     "consulting firm", "advisory", "recruitment", "staffing",
     "outsourcing", "bpo", "kpo", "it services"
   ],
   AI_MODEL: "mistral-large-latest",
   AI_TEMPERATURE: 0.1,
   LOG_TRUNCATE: 800,
-  ALLOWED_SENDERS: ["vimalraj5207@gmail.com","muralidharanl@gmail.com"],
+  ALLOWED_SENDERS: ["malikasaravanan774@11123792.brevosend.com"],
   WIKIPEDIA_ENABLED: true,
   WIKIPEDIA_CACHE_HOURS: 24,
   WIKIPEDIA_SLEEP_MS: 200,
   API_TIMEOUT_MS: 30000,
-  MAX_API_RETRIES: 3
+  MAX_API_RETRIES: 10
 };
 
 // COLUMN INDICES (0-based) - 16 COLUMNS for Leads sheet
@@ -373,7 +375,7 @@ function fetchAndQualifyLeads() {
         }
         
         stats.newMessagesProcessed++;
-        log("INFO", "[" + stats.newMessagesProcessed + "/200] Processing: " + subject);
+        log("INFO", "[" + stats.newMessagesProcessed + "/15] Processing: " + subject);
         
         var body = msg.getPlainBody();
         Utilities.sleep(CONFIG.SLEEP_MS);
@@ -555,7 +557,8 @@ function callMistralAI(emailBody, msgId) {
       var code = res.getResponseCode();
       if (code === 200) return parseAIResponse(res.getContentText(), msgId);
       if (code === 429) {
-        var wait = res.getHeaders()["Retry-After"] || Math.pow(2, retry) * 3;
+        // ✅ CHANGED: Base wait increased from 3 → 8 seconds (for Workspace 30-min limit)
+        var wait = res.getHeaders()["Retry-After"] || Math.pow(2, retry) * 20;
         log("WARN", "Rate limited. Waiting " + wait + "s");
         Utilities.sleep(wait * 1000);
         continue;

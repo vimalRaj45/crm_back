@@ -6,6 +6,7 @@ import { google } from 'googleapis';
 import crypto from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import jwt from 'jsonwebtoken';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -28,20 +29,21 @@ const ALLOWED_EMAILS  = (process.env.ALLOWED_EMAILS || '')
 
 // ─── In-memory Stores ────────────────────────────
 const otpStore   = new Map();
-const tokenStore = new Map();
 
 // ─── Auth Middleware ─────────────────────────────
+const JWT_SECRET = process.env.JWT_SECRET;
+
 function requireAuth(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'No token provided' });
 
-    const session = tokenStore.get(token);
-    if (!session || Date.now() > session.expires) {
-        tokenStore.delete(token);
-        return res.status(401).json({ error: 'Session expired' });
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.userEmail = decoded.email;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Session expired or invalid' });
     }
-    req.userEmail = session.email;
-    next();
 }
 
 // ─── Static Files ────────────────────────────────
@@ -135,9 +137,7 @@ app.post('/api/verify-otp', (req, res) => {
     }
 
     otpStore.delete(email);
-    const token = crypto.randomBytes(48).toString('hex');
-    tokenStore.set(token, { email, expires: Date.now() + 86400000 });
-    setTimeout(() => tokenStore.delete(token), 86400000);
+    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '1d' });
 
     console.log(`✅ ${email} authenticated`);
     res.json({ success: true, token, email });
@@ -150,8 +150,7 @@ app.get('/api/check-auth', requireAuth, (req, res) => {
 
 // ─── Logout ──────────────────────────────────────
 app.post('/api/logout', (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (token) tokenStore.delete(token);
+    // With JWT, logout is primarily handled client-side by deleting the token.
     res.json({ success: true });
 });
 

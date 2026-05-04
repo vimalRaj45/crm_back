@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spirelia Lead Intelligence</title>
     <meta name="description" content="Spirelia AI-powered lead intelligence dashboard">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -147,7 +148,7 @@
         }
         .filter-row-2 {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             margin-top: 12px;
             padding-top: 12px;
@@ -529,7 +530,7 @@
                     </select>
                 </div>
                 <div style="display:flex; gap:8px; align-self: end;">
-                    <button class="btn-apply" id="applyBtn"><i class="bi bi-funnel"></i> Apply</button>
+                    <button class="btn-apply" id="todayLeadsBtn" style="background:var(--blue);"><i class="bi bi-calendar-day"></i> Today</button>
                     <button class="btn-reset" id="resetBtn" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></button>
                 </div>
             </div>
@@ -568,6 +569,11 @@
                         <span class="score-range-sep">to</span>
                         <input type="date" id="dateTo" style="padding:10px 4px" title="To Date">
                     </div>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label"><i class="bi bi-journal-text"></i> Notes</div>
+                    <input type="text" id="notesSearch" list="notesDatalist" placeholder="Search saved notes…">
+                    <datalist id="notesDatalist"></datalist>
                 </div>
             </div>
 
@@ -625,7 +631,7 @@
         const cachedEmail = localStorage.getItem('spirelia_email');
         if (cachedEmail) document.getElementById('userEmail').textContent = cachedEmail;
         try {
-            const r = await fetch('/api/check-auth', { headers: AUTH });
+            const r = await fetch('https://crm-back-x4c6.onrender.com/api/check-auth', { headers: AUTH });
             if (r.ok) {
                 const d = await r.json();
                 document.getElementById('userEmail').textContent = d.email;
@@ -657,7 +663,7 @@
     // ─── Fetch Leads ──────────────────────────────
     async function fetchLeads() {
         try {
-            const res = await fetch('/api/leads', { headers: AUTH });
+            const res = await fetch('https://crm-back-x4c6.onrender.com/api/leads', { headers: AUTH });
             if (res.status === 401) {
                 // Session expired on server — show error but DON'T redirect
                 // User must explicitly click Logout to clear session
@@ -679,6 +685,7 @@
             computeStats();
             renderTable(allHeaders, allLeads);
             renderFit(allLeads);
+            updateNotesDatalist();
 
             loader.classList.add('hidden');
             statsRow.classList.remove('hidden');
@@ -850,7 +857,7 @@
                     <div class="modal-field-label">Notes</div>
                     <div class="modal-field-value">
                         <div style="position:relative;">
-                            <textarea id="notes-${sheetRow}" style="width:100%; min-height:80px; background:rgba(0,0,0,0.1); border:1px solid var(--border); border-radius:8px; padding:10px; color:var(--text); font-family:inherit; font-size:13px; resize:vertical;" placeholder="Add private notes here...">${notesValue ? esc(notesValue) : ''}</textarea>
+                            <textarea id="notes-${sheetRow}" style="width:100%; min-height:80px; background:rgba(0,0,0,0.1); border:1px solid var(--border); border-radius:8px; padding:10px; color:var(--text); font-family:inherit; font-size:13px; resize:vertical;" placeholder="Add private notes here (Press Enter to save)..." onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); saveNotes(${sheetRow}, this.nextElementSibling); }">${notesValue ? esc(notesValue) : ''}</textarea>
                             <button onclick="saveNotes(${sheetRow}, this)" style="margin-top:6px; background:var(--accent); color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-weight:600;"><i class="bi bi-save"></i> Save Notes</button>
                         </div>
                     </div>
@@ -904,6 +911,28 @@
         }
     }
 
+    function updateNotesDatalist() {
+        const list = $('notesDatalist');
+        if (!list) return;
+        
+        // Use a Map to ensure unique notes while storing the first associated company
+        const notesMap = new Map();
+        allLeads.forEach(l => {
+            const n = (l['Notes']||'').trim();
+            const c = (l['Company']||'Unknown Lead');
+            if (n && !notesMap.has(n)) {
+                notesMap.set(n, c);
+            }
+        });
+        
+        const opts = [];
+        notesMap.forEach((company, note) => {
+            // Option shows Company Name in dropdown, but inserts Note text when selected
+            opts.push(`<option value="${esc(note)}">Lead: ${esc(company)}</option>`);
+        });
+        list.innerHTML = opts.join('');
+    }
+
     async function saveNotes(sheetRow, btn) {
         const txt = document.getElementById('notes-' + sheetRow);
         if (!txt) return;
@@ -913,7 +942,7 @@
         btn.disabled = true;
 
         try {
-            const res = await fetch('/api/leads/notes', {
+            const res = await fetch('https://crm-back-x4c6.onrender.com/api/leads/notes', {
                 method: 'POST',
                 headers: { ...AUTH, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sheetRow, notes })
@@ -923,6 +952,7 @@
             // Update local state so it doesn't revert if they reopen modal
             const lead = allLeads.find(l => l._sheetRow === sheetRow);
             if (lead) lead['Notes'] = notes;
+            updateNotesDatalist();
 
             btn.innerHTML = '<i class="bi bi-check-circle"></i> Saved!';
             btn.style.background = 'var(--green)';
@@ -948,6 +978,7 @@
     const fitSearch     = $('fitSearch');
     const dateFrom      = $('dateFrom');
     const dateTo        = $('dateTo');
+    const notesSearch   = $('notesSearch');
     const toggleAdv     = $('toggleAdv');
     const advRow        = $('advRow');
     const filterCount   = $('filterCount');
@@ -989,14 +1020,38 @@
     });
 
     // Attach listeners
-    const applyBtn = $('applyBtn');
-    applyBtn.addEventListener('click', applyFilters);
-    [searchBox, fitSearch].forEach(el => el.addEventListener('keypress', e => { if(e.key === 'Enter') applyFilters(); }));
+    
+    // Live filtering for text inputs (user friendly auto-suggest filtering)
+    [searchBox, fitSearch, notesSearch].forEach(el => {
+        if (!el) return;
+        el.addEventListener('input', () => {
+            clearTimeout(el._filterTimer);
+            el._filterTimer = setTimeout(applyFilters, 150);
+        });
+    });
+
+    // Live filtering for select, number, and date inputs
+    [scoreMin, scoreMax, sectorFilter, positionFilter, dateFrom, dateTo].forEach(el => {
+        if (!el) return;
+        el.addEventListener('input', applyFilters);
+        el.addEventListener('change', applyFilters);
+    });
+
+    const todayLeadsBtn = $('todayLeadsBtn');
+    if (todayLeadsBtn) {
+        todayLeadsBtn.addEventListener('click', () => {
+            const today = new Date().toISOString().split('T')[0];
+            dateFrom.value = today;
+            dateTo.value = today;
+            applyFilters();
+        });
+    }
 
     resetBtn.addEventListener('click', () => {
         searchBox.value = ''; scoreMin.value = ''; scoreMax.value = '';
         sectorFilter.value = ''; positionFilter.value = '';
         fitSearch.value = ''; dateFrom.value = ''; dateTo.value = '';
+        if(notesSearch) notesSearch.value = '';
         contactOnly = false;
         contactToggle.classList.remove('on');
         filterCount.textContent = '';
@@ -1064,14 +1119,18 @@
             });
         }
 
+        // 8. Notes search
+        const nk = notesSearch ? notesSearch.value.trim().toLowerCase() : '';
+        if (nk) f = f.filter(l => (l['Notes']||'').toLowerCase().includes(nk));
+
         renderTable(allHeaders, f);
-        const active = [q, !isNaN(sMin), !isNaN(sMax), sec, pos, contactOnly, fk, df, dt].filter(Boolean).length;
+        const active = [q, !isNaN(sMin), !isNaN(sMax), sec, pos, contactOnly, fk, df, dt, nk].filter(Boolean).length;
         filterCount.textContent = active ? `${f.length} lead${f.length!==1?'s':''} matching ${active} filter${active!==1?'s':''}` : '';
     }
 
     // ─── Logout ───────────────────────────────────
     async function logout() {
-        try { await fetch('/api/logout', { method: 'POST', headers: AUTH }); } catch {}
+        try { await fetch('https://crm-back-x4c6.onrender.com/api/logout', { method: 'POST', headers: AUTH }); } catch {}
         localStorage.removeItem('spirelia_token');
         localStorage.removeItem('spirelia_email');
         window.location.href = '/login.html';
