@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 // ─── Config ──────────────────────────────────────
-const SHEET_ID        = "1R7aOXVtMkhm6qgEeTV6HpOShGjWIaRL3ydHBEhujXuc";
+const SHEET_ID        = "1v7-gLstbXePVCiHrjGysdjIR2vSDm180XYirgUWzl9U";
 const SERVICE_ACCOUNT = 'service-account.json';
 const BREVO_API_KEY   = process.env.BREVO_API_KEY;
 const BREVO_SENDER    = process.env.BREVO_SENDER;
