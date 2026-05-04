@@ -631,7 +631,7 @@
         const cachedEmail = localStorage.getItem('spirelia_email');
         if (cachedEmail) document.getElementById('userEmail').textContent = cachedEmail;
         try {
-            const r = await fetch('https://crm-back-x4c6.onrender.com/api/check-auth', { headers: AUTH });
+            const r = await fetch('https://crm-back-rcpj.onrender.com/api/check-auth', { headers: AUTH });
             if (r.ok) {
                 const d = await r.json();
                 document.getElementById('userEmail').textContent = d.email;
@@ -663,7 +663,7 @@
     // ─── Fetch Leads ──────────────────────────────
     async function fetchLeads() {
         try {
-            const res = await fetch('https://crm-back-x4c6.onrender.com/api/leads', { headers: AUTH });
+            const res = await fetch('https://crm-back-rcpj.onrender.com/api/leads', { headers: AUTH });
             if (res.status === 401) {
                 // Session expired on server — show error but DON'T redirect
                 // User must explicitly click Logout to clear session
@@ -942,7 +942,7 @@
         btn.disabled = true;
 
         try {
-            const res = await fetch('https://crm-back-x4c6.onrender.com/api/leads/notes', {
+            const res = await fetch('https://crm-back-rcpj.onrender.com/api/leads/notes', {
                 method: 'POST',
                 headers: { ...AUTH, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sheetRow, notes })
@@ -1130,7 +1130,7 @@
 
     // ─── Logout ───────────────────────────────────
     async function logout() {
-        try { await fetch('https://crm-back-x4c6.onrender.com/api/logout', { method: 'POST', headers: AUTH }); } catch {}
+        try { await fetch('https://crm-back-rcpj.onrender.com/api/logout', { method: 'POST', headers: AUTH }); } catch {}
         localStorage.removeItem('spirelia_token');
         localStorage.removeItem('spirelia_email');
         window.location.href = '/login.html';

@@ -229,7 +229,7 @@
         const token = localStorage.getItem('spirelia_token');
         if (!token) return;
         try {
-            const r = await fetch('https://crm-back-x4c6.onrender.com/api/check-auth', { headers: { Authorization: 'Bearer ' + token } });
+            const r = await fetch('https://crm-back-rcpj.onrender.com/api/check-auth', { headers: { Authorization: 'Bearer ' + token } });
             if (r.ok) window.location.href = '/';
         } catch {}
     })();
@@ -283,7 +283,7 @@
 
         setLoading(sendBtn, true);
         try {
-            const r = await fetch('https://crm-back-x4c6.onrender.com/api/send-otp', {
+            const r = await fetch('https://crm-back-rcpj.onrender.com/api/send-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
@@ -309,7 +309,7 @@
 
         setLoading(verifyBtn, true);
         try {
-            const r = await fetch('https://crm-back-x4c6.onrender.com/api/verify-otp', {
+            const r = await fetch('https://crm-back-rcpj.onrender.com/api/verify-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: currentEmail, otp }),
