@@ -40,18 +40,18 @@ var CONFIG = {
   MAX_API_RETRIES: 10
 };
 
-// COLUMN INDICES (0-based) - 17 COLUMNS for Leads sheet
+// COLUMN INDICES (0-based) - 18 COLUMNS for Leads sheet
 var COL = {
   DATE: 0, COMPANY: 1, POSITION: 2, ROLE_SUMMARY: 3, COMPANY_BIO: 4,
   POSTED: 5, DOMAIN: 6, EMAIL: 7, LINKEDIN: 8, SCORE: 9,
-  DECISION_LINK: 10, WIKI_LINK: 11, OPEN_MAIL: 12, MSG_ID: 13, FIT_REASON: 14, OUTREACH_MSG: 15, NOTES: 16
+  DECISION_LINK: 10, WIKI_LINK: 11, OPEN_MAIL: 12, MSG_ID: 13, FIT_REASON: 14, OUTREACH_MSG: 15, SOURCE: 16, NOTES: 17
 };
 
-// HEADERS for Leads sheet (17 columns)
+// HEADERS for Leads sheet (18 columns)
 var HEADERS = [
   "Date", "Company", "Position", "Role Summary", "Company Bio", "Posted",
   "Domain", "Email", "LinkedIn", "Score", "Decision Maker Link",
-  "Wikipedia Link", "Open Mail", "Message ID", "Fit Reason", "Outreach Msg", "Notes"
+  "Wikipedia Link", "Open Mail", "Message ID", "Fit Reason", "Outreach Msg", "Source", "Notes"
 ];
 
 // ✅ HEADERS for Filtered_Leads sheet (14 cols + Filter_Reason)
@@ -120,6 +120,7 @@ function initializeCRM() {
       sheet.setColumnWidth(COL.FIT_REASON + 1, 320);
       sheet.setColumnWidth(COL.OUTREACH_MSG + 1, 400);
       sheet.setColumnWidth(COL.OPEN_MAIL + 1, 150);
+      sheet.setColumnWidth(COL.SOURCE + 1, 100);
       sheet.setColumnWidth(COL.NOTES + 1, 300);
       var scoreRange = sheet.getRange(2, COL.SCORE + 1, 1000, 1);
       var rule = SpreadsheetApp.newDataValidation().requireNumberBetween(0, 100).build();
@@ -278,9 +279,10 @@ function saveFilteredLead(lead, msgId, threadId, msgDate, filterReason) {
       msgId || "",
       lead.fit_reason || "N/A",
       lead.outreach_msg || "N/A",
-      "",
-      filterReason,
-      Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")
+      lead.source || "Unknown", // ✅ Source
+      "", // ✅ Notes
+      filterReason, // ✅ WHY it was filtered
+      Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") // ✅ When filtered
     ];
     sheet.appendRow(row);
     SpreadsheetApp.flush();
@@ -359,10 +361,18 @@ function fetchAndQualifyLeads() {
         var msgId = msg.getId();
         var threadId = msg.getThread().getId(); // ✅ Get Thread ID for Open Mail link
         var subject = msg.getSubject() ? msg.getSubject().slice(0, 80) : "No Subject";
-        var sender = msg.getFrom();
+        var sender = msg.getFrom().toLowerCase();
         
-        if (!isSenderAllowed(sender)) {
-          log("DEBUG", "⏭️ Skip (sender not allowed): " + sender);
+        // ✅ Detect Source (Google vs LinkedIn)
+        var source = "Google";
+        if (sender.indexOf("linkedin") !== -1 || subject.toLowerCase().indexOf("linkedin") !== -1) {
+          source = "LinkedIn";
+        } else if (sender.indexOf("google") !== -1 || subject.toLowerCase().indexOf("google") !== -1) {
+          source = "Google";
+        }
+        
+        if (!isSenderAllowed(msg.getFrom())) {
+          log("DEBUG", "⏭️ Skip (sender not allowed): " + msg.getFrom());
           continue;
         }
         if (existingMsgIds.indexOf(msgId) !== -1) {
@@ -454,7 +464,9 @@ function fetchAndQualifyLeads() {
               l.decision_link || "", l.wikipedia || "", 
               openMailLink,  // ✅ Thread ID link
               msgId, l.fit_reason || "N/A",
-              l.outreach_msg || "N/A", ""
+              l.outreach_msg || "N/A", 
+              source, // ✅ Added Source
+              "" // Notes
             ];
             sheet.appendRow(newRow);
             SpreadsheetApp.flush();

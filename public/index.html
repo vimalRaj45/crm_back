@@ -723,6 +723,8 @@
             const company = lead['Company'] || 'Unknown';
             const position = lead['Position'] || 'Unknown';
             const mailLink = lead['Open Mail'] || '';
+            const source = lead['Source'] || 'Google';
+            const sIcon = source.toLowerCase() === 'linkedin' ? 'bi-linkedin' : 'bi-google';
             
             return `
             <div class="lead-card" onclick="openLeadModal(${idx})">
@@ -735,6 +737,7 @@
                 </div>
                 <div class="lead-card-meta">
                     <span class="lead-card-tag"><i class="bi bi-calendar3"></i> ${esc(lead['Date'] || '')}</span>
+                    <span class="lead-card-tag"><i class="bi ${sIcon}"></i> ${esc(source)}</span>
                     ${lead['Domain'] ? `<span class="lead-card-tag"><i class="bi bi-globe"></i> Website</span>` : ''}
                 </div>
                 <div class="lead-card-actions">
@@ -788,12 +791,10 @@
                     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery).replace(/%20/g, '+')}`;
                     return `<td><a href="${searchUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="bi bi-google"></i> Google Search</a></td>`;
                 }
-                if (h === 'Source' && (v === 'Google' || !v)) {
-                    const compName = lead['Company'] || 'Company';
-                    const pos = lead['Position'] || '';
-                    const searchQuery = (compName + " " + pos + " job").trim();
-                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery).replace(/%20/g, '+')}`;
-                    return `<td><a href="${searchUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="bi bi-google"></i> Google Search</a></td>`;
+                if (h === 'Source') {
+                    const icon = v.toLowerCase() === 'linkedin' ? 'bi-linkedin' : 'bi-google';
+                    const color = v.toLowerCase() === 'linkedin' ? '#0a66c2' : 'var(--blue)';
+                    return `<td><span style="color:${color}; font-weight:600;"><i class="bi ${icon}"></i> ${esc(v || 'Google')}</span></td>`;
                 }
                 if (h === 'Score' && v) {
                     const n = parseInt(v);
@@ -834,7 +835,7 @@
         'Wikipedia Link': 'bi-wikipedia',
         'Message ID': 'bi-hash',
         'Fit Reason': 'bi-lightbulb',
-        'Outreach Msg': 'bi-pencil-square',
+        'Outreach Msg': 'bi-send',
         'Sector': 'bi-tags',
         'Headquarters': 'bi-geo-alt',
         'Employee Size': 'bi-people',
