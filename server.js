@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 // ─── Config ──────────────────────────────────────
-const SHEET_ID        = "1R7aOXVtMkhm6qgEeTV6HpOShGjWIaRL3ydHBEhujXuc";
+const SHEET_ID        = "1VJtX69Wn4lDryad8L6NkpMylnlys_tPJqYn-b2Oa_aI";
 const SERVICE_ACCOUNT = 'service-account.json';
 const BREVO_API_KEY   = process.env.BREVO_API_KEY;
 const BREVO_SENDER    = process.env.BREVO_SENDER;
@@ -164,7 +164,7 @@ app.get('/api/leads', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const result = await sheets.spreadsheets.values.get({
             spreadsheetId: SHEET_ID,
-            range: 'Leads!A1:P',
+            range: 'Leads!A1:U',
         });
 
         const rows = result.data.values;
@@ -197,7 +197,7 @@ app.post('/api/leads/notes', requireAuth, async (req, res) => {
         
         await sheets.spreadsheets.values.update({
             spreadsheetId: SHEET_ID,
-            range: `Leads!P${sheetRow}`, // Column P is the 'Notes' column
+            range: `Leads!R${sheetRow}`, // Column R is the 'Notes' column
             valueInputOption: 'USER_ENTERED',
             requestBody: { values: [[notes || '']] }
         });

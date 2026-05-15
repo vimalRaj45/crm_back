@@ -108,6 +108,21 @@
         }
         .btn-logout:hover { background: rgba(239,68,68,0.2); }
 
+        /* ── Tool Buttons ───────────── */
+        .btn-tool {
+            padding: 7px 12px; font-size: 12px; font-weight: 600;
+            background: rgba(255,255,255,0.06); color: var(--text-mid);
+            border: 1px solid var(--border);
+            border-radius: 8px; cursor: pointer;
+            text-decoration: none; display: flex; align-items: center; gap: 6px;
+            transition: all .2s;
+        }
+        .btn-tool:hover { background: rgba(124,58,237,0.15); color: var(--accent-light); border-color: rgba(124,58,237,0.3); }
+        .nav-tool-text { display: none; }
+        @media (min-width: 1024px) {
+            .nav-tool-text { display: inline; }
+        }
+
         /* ── Container ──────────────── */
         .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
@@ -452,6 +467,8 @@
         /* ── Mobile ──────────────────── */
         @media (max-width: 768px) {
             .navbar { padding: 12px 16px; }
+            .nav-right { gap: 8px; }
+            .btn-tool { padding: 7px 10px; }
             .nav-brand { font-size: 15px; }
             .nav-user { display: none !important; }
             .container { padding: 16px; }
@@ -484,6 +501,12 @@
             <span>Spirelia Intelligence</span>
         </div>
         <div class="nav-right">
+            <a href="https://mailmeteor.com/tools/reverse-email-lookup" target="_blank" class="btn-tool" title="Reverse Email Lookup">
+                <i class="bi bi-search"></i> <span class="nav-tool-text">Reverse Lookup</span>
+            </a>
+            <a href="https://mailmeteor.com/tools/linkedin-email-finder" target="_blank" class="btn-tool" title="LinkedIn Email Finder">
+                <i class="bi bi-envelope-plus"></i> <span class="nav-tool-text">Email Finder</span>
+            </a>
             <span class="nav-badge" id="leadCount">—</span>
             <span class="nav-user" id="userEmail"></span>
             <button class="btn-theme" id="themeToggle" title="Toggle theme"><i class="bi bi-moon-stars-fill"></i></button>
@@ -631,7 +654,7 @@
         const cachedEmail = localStorage.getItem('spirelia_email');
         if (cachedEmail) document.getElementById('userEmail').textContent = cachedEmail;
         try {
-            const r = await fetch('https://crm-back-rcpj.onrender.com/api/check-auth', { headers: AUTH });
+            const r = await fetch('https://crm-back-43yb.onrender.com/api/check-auth', { headers: AUTH });
             if (r.ok) {
                 const d = await r.json();
                 document.getElementById('userEmail').textContent = d.email;
@@ -663,7 +686,7 @@
     // ─── Fetch Leads ──────────────────────────────
     async function fetchLeads() {
         try {
-            const res = await fetch('https://crm-back-rcpj.onrender.com/api/leads', { headers: AUTH });
+            const res = await fetch('https://crm-back-43yb.onrender.com/api/leads', { headers: AUTH });
             if (res.status === 401) {
                 // Session expired on server — show error but DON'T redirect
                 // User must explicitly click Logout to clear session
@@ -761,7 +784,11 @@
         'Message ID': 'bi-hash',
         'Fit Reason': 'bi-lightbulb',
         'Outreach Msg': 'bi-pencil-square',
-        'Notes': 'bi-journal-text'
+        'Job Link': 'bi-link-45deg',
+        'Source': 'bi-share',
+        'Notes': 'bi-journal-text',
+        'Platform': 'bi-share',
+        'Source Link': 'bi-link-45deg'
     };
 
     // ─── Lead Detail Modal ────────────────────────
@@ -942,7 +969,7 @@
         btn.disabled = true;
 
         try {
-            const res = await fetch('https://crm-back-rcpj.onrender.com/api/leads/notes', {
+            const res = await fetch('https://crm-back-43yb.onrender.com/api/leads/notes', {
                 method: 'POST',
                 headers: { ...AUTH, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sheetRow, notes })
@@ -1130,7 +1157,7 @@
 
     // ─── Logout ───────────────────────────────────
     async function logout() {
-        try { await fetch('https://crm-back-rcpj.onrender.com/api/logout', { method: 'POST', headers: AUTH }); } catch {}
+        try { await fetch('https://crm-back-43yb.onrender.com/api/logout', { method: 'POST', headers: AUTH }); } catch {}
         localStorage.removeItem('spirelia_token');
         localStorage.removeItem('spirelia_email');
         window.location.href = '/login.html';
