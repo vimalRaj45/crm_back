@@ -11,7 +11,7 @@
 // GLOBAL CONFIGURATION
 // ═══════════════════════════════════════════════════════════
 
-var SHEET_ID = "1VJtX69Wn4lDryad8L6NkpMylnlys_tPJqYn-b2Oa_aI";
+var SHEET_ID = "1R7aOXVtMkhm6qgEeTV6HpOShGjWIaRL3ydHBEhujXuc";
 var SHEET_NAME = "Leads";
 var FILTERED_SHEET_NAME = "Filtered_Leads"; // ✅ NEW: Track rejected leads
 var LOG_SHEET_NAME = "Logs";
@@ -31,7 +31,7 @@ var CONFIG = {
   AI_MODEL: "mistral-large-latest",
   AI_TEMPERATURE: 0.1,
   LOG_TRUNCATE: 800,
-  ALLOWED_SENDERS: ["vimalraj5207@gmail.com"],
+  ALLOWED_SENDERS: ["malikasaravanan774@11123792.brevosend.com"],
   WIKIPEDIA_ENABLED: true,
   WIKIPEDIA_CACHE_HOURS: 24,
   WIKIPEDIA_SLEEP_MS: 200,
@@ -44,14 +44,14 @@ var COL = {
   DATE: 0, COMPANY: 1, POSITION: 2, ROLE_SUMMARY: 3, COMPANY_BIO: 4,
   POSTED: 5, DOMAIN: 6, EMAIL: 7, LINKEDIN: 8, SCORE: 9,
   DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13, OUTREACH_MSG: 14, 
-  JOB_LINK: 15, SOURCE: 16, NOTES: 17
+  SOURCE: 15, NOTES: 16
 };
 
 // HEADERS for Leads sheet (16 columns)
 var HEADERS = [
   "Date", "Company", "Position", "Role Summary", "Company Bio", "Posted",
   "Domain", "Email", "LinkedIn", "Score", "Decision Maker Link",
-  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg", "Job Link", "Source", "Notes"
+  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg", "Source", "Notes"
 ];
 
 // ✅ HEADERS for Filtered_Leads sheet (14 cols + Filter_Reason)
@@ -120,8 +120,7 @@ function initializeCRM() {
       sheet.autoResizeColumns(1, HEADERS.length);
       sheet.setColumnWidth(COL.FIT_REASON + 1, 320);
       sheet.setColumnWidth(COL.OUTREACH_MSG + 1, 400);
-      sheet.setColumnWidth(COL.JOB_LINK + 1, 250);
-      sheet.setColumnWidth(COL.SOURCE + 1, 120);
+      sheet.setColumnWidth(COL.SOURCE + 1, 250);
       sheet.setColumnWidth(COL.NOTES + 1, 300);
       var scoreRange = sheet.getRange(2, COL.SCORE + 1, 1000, 1);
       var rule = SpreadsheetApp.newDataValidation().requireNumberBetween(0, 100).build();
@@ -277,7 +276,6 @@ function saveFilteredLead(lead, msgId, msgDate, filterReason) {
       msgId || "",
       lead.fit_reason || "",
       lead.outreach_msg || "",
-      lead.job_link || "",
       lead.source || "",
       "", // ✅ Notes (Empty string for manual entry)
       filterReason, // ✅ WHY it was filtered
@@ -454,7 +452,7 @@ function fetchAndQualifyLeads() {
               l.role_summary || "N/A", l.company_bio || "N/A", l.posted_date || "",
               l.domain || "", l.email || "", l.linkedin || "", l.score || "",
               l.decision_link || "", l.wikipedia || "", msgId, l.fit_reason || "",
-              l.outreach_msg || "", l.job_link || "", l.source || "", "" // Notes
+              l.outreach_msg || "", l.source || "", "" // Notes
             ];
             sheet.appendRow(newRow);
             SpreadsheetApp.flush();
@@ -598,7 +596,7 @@ function buildPrompt(emailBody) {
     "11. decision_link: LinkedIn URL to see all employees/people of this company. Use the exact same vanity-name from the linkedin field and append /people/ (e.g., https://www.linkedin.com/company/tesla/people/) (string or empty)\n" +
     "12. wikipedia: Wikipedia URL if company has one (string or empty)\n" +
     "13. outreach_msg: Company specific outreach message, personalized based on their profile and R&D signals (string)\n" +
-    "14. job_link: The direct URL to the job listing found in the email body. DO NOT hallucinate. ONLY provide if a clear URL (starting with http) exists in the text. Otherwise, return empty. (string or empty)\n\n" +
+    "14. source: The platform and direct link where the job was found (e.g., \"LinkedIn: https://...\", \"Google: https://...\", etc.). If no direct link is found but it's from Google, provide the platform name only. (string or empty)\n\n" +
     "SECTOR FILTER (ONLY extract if matches):\n" +
     "- Manufacturing, Automotive, Aerospace, Pharma, MedTech, Global Capability Centers (GCC)\n" +
     "- Companies with 500+ employees\n" +
@@ -606,7 +604,7 @@ function buildPrompt(emailBody) {
     "EXCLUDE:\n" +
     "- IT Services (TCS, Infosys, Wipro, etc.), Trading, Startups <5 years, Distributors, Retail chains, Law firms, Consulting firms, IP services\n\n" +
     "OUTPUT FORMAT (STRICT JSON ARRAY):\n" +
-    "[{\"company_name\":\"String\",\"position\":\"String\",\"role_summary\":\"String\",\"company_bio\":\"String\",\"posted_date\":\"String\",\"domain\":\"String\",\"email\":\"String\",\"linkedin\":\"String\",\"score\":85,\"fit_reason\":\"String\",\"decision_link\":\"String\",\"wikipedia\":\"String\",\"outreach_msg\":\"String\",\"job_link\":\"String\"}]\n\n" +
+    "[{\"company_name\":\"String\",\"position\":\"String\",\"role_summary\":\"String\",\"company_bio\":\"String\",\"posted_date\":\"String\",\"domain\":\"String\",\"email\":\"String\",\"linkedin\":\"String\",\"score\":85,\"fit_reason\":\"String\",\"decision_link\":\"String\",\"wikipedia\":\"String\",\"outreach_msg\":\"String\",\"source\":\"String\"}]\n\n" +
     "EMAIL TO ANALYZE:\n" + emailBody;
 }
 
@@ -651,12 +649,19 @@ function parseAIResponse(rawResponse, msgId) {
         domain: l.domain || l.website || extractDomain(l.company_name) || "",
         email: l.email || l.contact_email || guessEmail(l.domain) || "",
         linkedin: l.linkedin || l.linkedin_url || buildLinkedIn(l.company_name) || "",
+        score: typeof l.score === "number" ? l.score : (l.fit_score || l.relevance_score || ""),
         fit_reason: fitReason,
         outreach_msg: l.outreach_msg || l.outreach || "",
         decision_link: (l.decision_link || l.cto_link || buildDecisionLink(l.company_name) || "").trim(),
         wikipedia: wikiUrl,
-        job_link: (l.job_link || buildGoogleJobSearchLink(l.company_name, l.position)).trim(),
-        source: detectSource(l.job_link)
+        source: (function() {
+          var s = l.source || "";
+          if (s.startsWith("http")) return s.trim();
+          if (s.toLowerCase().indexOf("linkedin") !== -1 && s.indexOf("http") !== -1) return s.slice(s.indexOf("http")).trim();
+          if (s.toLowerCase().indexOf("http") !== -1) return s.slice(s.indexOf("http")).trim();
+          // Fallback to Google Search if link missing
+          return buildGoogleJobSearchLink(l.company_name, l.position);
+        })()
       });
     }
     return results;
@@ -791,15 +796,4 @@ function buildGoogleJobSearchLink(companyName, position) {
   var query = (companyName + " " + (position || "") + " job").trim();
   // Using '+' for spaces as it's more compatible with Google Search parameters
   return "https://www.google.com/search?q=" + encodeURIComponent(query).replace(/%20/g, "+");
-}
-
-function detectSource(url) {
-  if (!url || url.indexOf("google.com/search") !== -1) return "Google";
-  var low = url.toLowerCase();
-  if (low.indexOf("linkedin.com") !== -1) return "LinkedIn";
-  if (low.indexOf("glassdoor.com") !== -1) return "Glassdoor";
-  if (low.indexOf("indeed.com") !== -1) return "Indeed";
-  if (low.indexOf("lever.co") !== -1) return "Lever";
-  if (low.indexOf("greenhouse.io") !== -1) return "Greenhouse";
-  return "Email Link";
 }

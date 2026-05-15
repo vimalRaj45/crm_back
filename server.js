@@ -164,7 +164,7 @@ app.get('/api/leads', requireAuth, async (req, res) => {
         const sheets = google.sheets({ version: 'v4', auth });
         const result = await sheets.spreadsheets.values.get({
             spreadsheetId: SHEET_ID,
-            range: 'Leads!A1:U',
+            range: 'Leads!A1:T',
         });
 
         const rows = result.data.values;
@@ -197,7 +197,7 @@ app.post('/api/leads/notes', requireAuth, async (req, res) => {
         
         await sheets.spreadsheets.values.update({
             spreadsheetId: SHEET_ID,
-            range: `Leads!R${sheetRow}`, // Column R is the 'Notes' column
+            range: `Leads!Q${sheetRow}`, // Column Q is the 'Notes' column
             valueInputOption: 'USER_ENTERED',
             requestBody: { values: [[notes || '']] }
         });
