@@ -598,8 +598,8 @@ function buildPrompt(emailBody) {
     "11. decision_link: LinkedIn URL to see all employees/people of this company. Use the exact same vanity-name from the linkedin field and append /people/ (e.g., https://www.linkedin.com/company/tesla/people/) (string or empty)\n" +
     "12. wikipedia: Wikipedia URL if company has one (string or empty)\n" +
     "13. outreach_msg: Company specific outreach message, personalized based on their profile and R&D signals (string)\n" +
-    "14. job_link: The direct URL to the job listing found in the email (string or empty)\n" +
-    "15. source: The platform where the job was found (e.g., LinkedIn, Google, Glassdoor, etc.) (string or empty)\n\n" +
+    "14. job_link: The REAL direct URL to the job listing found in the email body (e.g. from 'View Job' or 'Apply' buttons). This is CRITICAL. If found, return the full URL. (string or empty)\n" +
+    "15. source: The platform where the job was found (e.g., LinkedIn, Google, Glassdoor, etc.). (string or empty)\n\n" +
     "SECTOR FILTER (ONLY extract if matches):\n" +
     "- Manufacturing, Automotive, Aerospace, Pharma, MedTech, Global Capability Centers (GCC)\n" +
     "- Companies with 500+ employees\n" +
@@ -657,7 +657,7 @@ function parseAIResponse(rawResponse, msgId) {
         decision_link: (l.decision_link || l.cto_link || buildDecisionLink(l.company_name) || "").trim(),
         wikipedia: wikiUrl,
         job_link: (l.job_link || buildGoogleJobSearchLink(l.company_name, l.position)).trim(),
-        source: (l.source || "Google").trim()
+        source: detectSource(l.job_link, l.source)
       });
     }
     return results;
@@ -792,4 +792,15 @@ function buildGoogleJobSearchLink(companyName, position) {
   var query = (companyName + " " + (position || "") + " job").trim();
   // Using '+' for spaces as it's more compatible with Google Search parameters
   return "https://www.google.com/search?q=" + encodeURIComponent(query).replace(/%20/g, "+");
+}
+
+function detectSource(url, aiSource) {
+  if (!url || url.indexOf("google.com/search") !== -1) return (aiSource || "Google").trim();
+  var low = url.toLowerCase();
+  if (low.indexOf("linkedin.com") !== -1) return "LinkedIn";
+  if (low.indexOf("glassdoor.com") !== -1) return "Glassdoor";
+  if (low.indexOf("indeed.com") !== -1) return "Indeed";
+  if (low.indexOf("lever.co") !== -1) return "Lever";
+  if (low.indexOf("greenhouse.io") !== -1) return "Greenhouse";
+  return (aiSource || "Email Link").trim();
 }
