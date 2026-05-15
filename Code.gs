@@ -596,7 +596,7 @@ function buildPrompt(emailBody) {
     "11. decision_link: LinkedIn URL to see all employees/people of this company. Use the exact same vanity-name from the linkedin field and append /people/ (e.g., https://www.linkedin.com/company/tesla/people/) (string or empty)\n" +
     "12. wikipedia: Wikipedia URL if company has one (string or empty)\n" +
     "13. outreach_msg: Company specific outreach message, personalized based on their profile and R&D signals (string)\n" +
-    "14. source: The platform and direct link where the job was found (e.g., \"LinkedIn: https://...\", \"Google: https://...\", etc.). If no direct link is found but it's from Google, provide the platform name only. (string or empty)\n\n" +
+    "14. source: The platform and EXACT direct link where the job was found. CRITICAL: If this is a Google Jobs alert, extract the full \"https://www.google.co.in/search?q=...&udm=8...\" link from the email body. (string or empty)\n\n" +
     "SECTOR FILTER (ONLY extract if matches):\n" +
     "- Manufacturing, Automotive, Aerospace, Pharma, MedTech, Global Capability Centers (GCC)\n" +
     "- Companies with 500+ employees\n" +
@@ -794,6 +794,6 @@ function buildDecisionLink(companyName) {
 function buildGoogleJobSearchLink(companyName, position) {
   if (!companyName || companyName === "N/A") return "";
   var query = (companyName + " " + (position || "") + " job").trim();
-  // Using '+' for spaces as it's more compatible with Google Search parameters
-  return "https://www.google.com/search?q=" + encodeURIComponent(query).replace(/%20/g, "+");
+  // Using 'udm=8' to force the Google Jobs tab/viewer
+  return "https://www.google.co.in/search?q=" + encodeURIComponent(query).replace(/%20/g, "+") + "&udm=8";
 }
