@@ -39,19 +39,20 @@ var CONFIG = {
   MAX_API_RETRIES: 10
 };
 
-// COLUMN INDICES (0-based) - 16 COLUMNS for Leads sheet
+// COLUMN INDICES (0-based) - 20 COLUMNS for Leads sheet
 var COL = {
   DATE: 0, COMPANY: 1, POSITION: 2, ROLE_SUMMARY: 3, COMPANY_BIO: 4,
   POSTED: 5, DOMAIN: 6, EMAIL: 7, LINKEDIN: 8, SCORE: 9,
-  DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13, OUTREACH_MSG: 14, 
-  SOURCE: 15, NOTES: 16
+  DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13, OUTREACH_MSG: 14,
+  SECTOR: 15, HQ: 16, EMPLOYEES: 17, OPEN_MAIL: 18, NOTES: 19
 };
 
-// HEADERS for Leads sheet (16 columns)
+// HEADERS for Leads sheet (20 columns)
 var HEADERS = [
   "Date", "Company", "Position", "Role Summary", "Company Bio", "Posted",
   "Domain", "Email", "LinkedIn", "Score", "Decision Maker Link",
-  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg", "Source", "Notes"
+  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg", 
+  "Sector", "Headquarters", "Employee Size", "Open Mail", "Notes"
 ];
 
 // ✅ HEADERS for Filtered_Leads sheet (14 cols + Filter_Reason)
@@ -109,7 +110,7 @@ function initializeCRM() {
     var needsUpdate = true;
     if (sheet.getLastColumn() > 0 && sheet.getLastRow() > 0) {
       var currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[currentHeaders.length - 1] !== "Notes";
+      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[COL.NOTES] !== "Notes";
     }
     if (needsUpdate) {
       sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
@@ -120,7 +121,10 @@ function initializeCRM() {
       sheet.autoResizeColumns(1, HEADERS.length);
       sheet.setColumnWidth(COL.FIT_REASON + 1, 320);
       sheet.setColumnWidth(COL.OUTREACH_MSG + 1, 400);
-      sheet.setColumnWidth(COL.SOURCE + 1, 250);
+      sheet.setColumnWidth(COL.SECTOR + 1, 150);
+      sheet.setColumnWidth(COL.HQ + 1, 200);
+      sheet.setColumnWidth(COL.EMPLOYEES + 1, 120);
+      sheet.setColumnWidth(COL.OPEN_MAIL + 1, 150);
       sheet.setColumnWidth(COL.NOTES + 1, 300);
       var scoreRange = sheet.getRange(2, COL.SCORE + 1, 1000, 1);
       var rule = SpreadsheetApp.newDataValidation().requireNumberBetween(0, 100).build();
@@ -146,8 +150,8 @@ function initializeCRM() {
         .setHorizontalAlignment("center");
       filteredSheet.setFrozenRows(1);
       filteredSheet.autoResizeColumns(1, FILTERED_HEADERS.length);
-      filteredSheet.setColumnWidth(HEADERS.length + 1, 250); // Filter_Reason column
-      filteredSheet.setColumnWidth(HEADERS.length + 2, 180); // Filtered_At column
+      filteredSheet.setColumnWidth(16, 250); // Filter_Reason column
+      filteredSheet.setColumnWidth(17, 180); // Filtered_At column
       log("INFO", "Filtered_Leads sheet headers created");
     }
     
@@ -276,7 +280,6 @@ function saveFilteredLead(lead, msgId, msgDate, filterReason) {
       msgId || "",
       lead.fit_reason || "",
       lead.outreach_msg || "",
-      lead.source || "",
       "", // ✅ Notes (Empty string for manual entry)
       filterReason, // ✅ WHY it was filtered
       Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") // ✅ When filtered
@@ -447,12 +450,14 @@ function fetchAndQualifyLeads() {
           
           // ✅ APPEND TO MAIN SHEET
           try {
+            var gmailLink = "https://mail.google.com/mail/u/0/#search/rfc822msgid%3A" + encodeURIComponent(msgId);
             var newRow = [
               msg.getDate(), l.company_name || "N/A", l.position || "N/A",
               l.role_summary || "N/A", l.company_bio || "N/A", l.posted_date || "",
               l.domain || "", l.email || "", l.linkedin || "", l.score || "",
               l.decision_link || "", l.wikipedia || "", msgId, l.fit_reason || "",
-              l.outreach_msg || "", l.source || "", "" // Notes
+              l.outreach_msg || "", 
+              l.sector || "", l.hq || "", l.employees || "", gmailLink, "" // Notes
             ];
             sheet.appendRow(newRow);
             SpreadsheetApp.flush();
@@ -595,8 +600,7 @@ function buildPrompt(emailBody) {
     "10. fit_reason: CONCISE 1-sentence explanation WHY this lead matches. MUST cite: (1) sector match, (2) employee size signal if available, (3) specific R&D keyword found in email.\n" +
     "11. decision_link: LinkedIn URL to see all employees/people of this company. Use the exact same vanity-name from the linkedin field and append /people/ (e.g., https://www.linkedin.com/company/tesla/people/) (string or empty)\n" +
     "12. wikipedia: Wikipedia URL if company has one (string or empty)\n" +
-    "13. outreach_msg: Company specific outreach message, personalized based on their profile and R&D signals (string)\n" +
-    "14. source: The platform and EXACT direct link where the job was found. CRITICAL: If this is a Google Jobs alert, extract the full \"https://www.google.co.in/search?q=...&udm=8...\" link from the email body. (string or empty)\n\n" +
+    "13. outreach_msg: Company specific outreach message, personalized based on their profile and R&D signals (string)\n\n" +
     "SECTOR FILTER (ONLY extract if matches):\n" +
     "- Manufacturing, Automotive, Aerospace, Pharma, MedTech, Global Capability Centers (GCC)\n" +
     "- Companies with 500+ employees\n" +
@@ -604,7 +608,7 @@ function buildPrompt(emailBody) {
     "EXCLUDE:\n" +
     "- IT Services (TCS, Infosys, Wipro, etc.), Trading, Startups <5 years, Distributors, Retail chains, Law firms, Consulting firms, IP services\n\n" +
     "OUTPUT FORMAT (STRICT JSON ARRAY):\n" +
-    "[{\"company_name\":\"String\",\"position\":\"String\",\"role_summary\":\"String\",\"company_bio\":\"String\",\"posted_date\":\"String\",\"domain\":\"String\",\"email\":\"String\",\"linkedin\":\"String\",\"score\":85,\"fit_reason\":\"String\",\"decision_link\":\"String\",\"wikipedia\":\"String\",\"outreach_msg\":\"String\",\"source\":\"String\"}]\n\n" +
+    "[{\"company_name\":\"String\",\"position\":\"String\",\"role_summary\":\"String\",\"company_bio\":\"String\",\"posted_date\":\"String\",\"domain\":\"String\",\"email\":\"String\",\"linkedin\":\"String\",\"score\":85,\"fit_reason\":\"String\",\"decision_link\":\"String\",\"wikipedia\":\"String\",\"outreach_msg\":\"String\"}]\n\n" +
     "EMAIL TO ANALYZE:\n" + emailBody;
 }
 
@@ -618,19 +622,17 @@ function parseAIResponse(rawResponse, msgId) {
     var results = [];
     for (var i = 0; i < raw.length; i++) {
       var l = raw[i];
-      var wikiUrl = (function() {
-        var company = l.company_name || l.Company || l.organization;
-        if (!company || company === "N/A") return "";
-        if (l.wikipedia && l.wikipedia.indexOf("wikipedia.org") !== -1) return l.wikipedia;
-        if (l.wiki_url && l.wiki_url.indexOf("wikipedia.org") !== -1) return l.wiki_url;
-        return getVerifiedWikipediaUrl(company, msgId);
-      })();
+      var company = l.company_name || l.Company || l.organization || "N/A";
+      var wikiResult = getCachedWikipediaResult(company);
+      if (!wikiResult && CONFIG.WIKIPEDIA_ENABLED) wikiResult = fetchWikipediaEnrichment(company, msgId);
+      
+      var wikiUrl = wikiResult?.wikiUrl || "";
+      var hq = wikiResult?.data?.firmographics?.headquarters || "";
+      var employees = wikiResult?.data?.firmographics?.employees || "";
+      var industry = wikiResult?.data?.firmographics?.industry || "";
+
       var fitReason = (function() {
         var base = l.fit_reason || l.why_match || l.match_reason || "Score based on sector + R&D signals";
-        var company = l.company_name || l.Company || l.organization;
-        if (!company || company === "N/A") return base;
-        var wikiResult = getCachedWikipediaResult(company);
-        if (!wikiResult && CONFIG.WIKIPEDIA_ENABLED) wikiResult = fetchWikipediaEnrichment(company, msgId);
         if (wikiResult?.data?.firmographics) {
           var fg = wikiResult.data.firmographics, extras = [];
           if (fg.headquarters) extras.push("HQ: " + fg.headquarters);
@@ -652,16 +654,11 @@ function parseAIResponse(rawResponse, msgId) {
         score: typeof l.score === "number" ? l.score : (l.fit_score || l.relevance_score || ""),
         fit_reason: fitReason,
         outreach_msg: l.outreach_msg || l.outreach || "",
-        decision_link: (l.decision_link || l.cto_link || buildDecisionLink(l.company_name) || "").trim(),
+        decision_link: l.decision_link || l.cto_link || buildLinkedIn(l.company_name) + "/people/" || "",
         wikipedia: wikiUrl,
-        source: (function() {
-          var s = l.source || "";
-          if (s.startsWith("http")) return s.trim();
-          if (s.toLowerCase().indexOf("linkedin") !== -1 && s.indexOf("http") !== -1) return s.slice(s.indexOf("http")).trim();
-          if (s.toLowerCase().indexOf("http") !== -1) return s.slice(s.indexOf("http")).trim();
-          // Fallback to Google Search if link missing
-          return buildGoogleJobSearchLink(l.company_name, l.position);
-        })()
+        sector: industry || l.sector || "",
+        hq: hq || "",
+        employees: employees || ""
       });
     }
     return results;
@@ -789,11 +786,4 @@ function buildDecisionLink(companyName) {
   var cleanName = companyName.toLowerCase().replace(/\b(inc|ltd|llc|corp|corporation|limited|company|group)\b\.?/gi, "").trim();
   var slug = cleanName.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return "https://www.linkedin.com/company/" + slug + "/people/";
-}
-
-function buildGoogleJobSearchLink(companyName, position) {
-  if (!companyName || companyName === "N/A") return "";
-  var query = (companyName + " " + (position || "") + " job").trim();
-  // Using 'udm=8' to force the Google Jobs tab/viewer
-  return "https://www.google.co.in/search?q=" + encodeURIComponent(query).replace(/%20/g, "+") + "&udm=8";
 }

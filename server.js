@@ -197,7 +197,7 @@ app.post('/api/leads/notes', requireAuth, async (req, res) => {
         
         await sheets.spreadsheets.values.update({
             spreadsheetId: SHEET_ID,
-            range: `Leads!Q${sheetRow}`, // Column Q is the 'Notes' column
+            range: `Leads!T${sheetRow}`, // Column T is the 'Notes' column
             valueInputOption: 'USER_ENTERED',
             requestBody: { values: [[notes || '']] }
         });

@@ -762,6 +762,9 @@
                 if (h === 'Wikipedia Link' && !v) {
                     return `<td style="text-align:center"><i class="bi bi-exclamation-triangle-fill" style="color:var(--amber); font-size:16px; cursor:pointer;" title="No Wikipedia Data" onclick="openLeadModal(${idx}, true); event.stopPropagation();"></i></td>`;
                 }
+                if (h === 'Open Mail' && v) {
+                    return `<td><a href="${esc(v)}" target="_blank" class="btn-tool" style="display:inline-flex; width:auto; padding:4px 8px; font-size:11px;" onclick="event.stopPropagation()"><i class="bi bi-envelope-open"></i> Open Mail</a></td>`;
+                }
                 if (v.startsWith('http')) {
                     const label = v.length > 35 ? v.slice(0, 35) + '…' : v;
                     return `<td><a href="${esc(v)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(label)}</a></td>`;
@@ -791,6 +794,10 @@
         'Message ID': 'bi-hash',
         'Fit Reason': 'bi-lightbulb',
         'Outreach Msg': 'bi-pencil-square',
+        'Sector': 'bi-tags',
+        'Headquarters': 'bi-geo-alt',
+        'Employee Size': 'bi-people',
+        'Open Mail': 'bi-envelope-open',
         'Source': 'bi-link-45deg',
         'Notes': 'bi-journal-text'
     };
