@@ -9,26 +9,26 @@ import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const __dirname = path.dirname(__filename);
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
 // ─── Config ──────────────────────────────────────
-const SHEET_ID        = "1VJtX69Wn4lDryad8L6NkpMylnlys_tPJqYn-b2Oa_aI";
+const SHEET_ID = "1VJtX69Wn4lDryad8L6NkpMylnlys_tPJqYn-b2Oa_aI";
 const SERVICE_ACCOUNT = 'service-account.json';
-const BREVO_API_KEY   = process.env.BREVO_API_KEY;
-const BREVO_SENDER    = process.env.BREVO_SENDER;
-const ALLOWED_EMAILS  = (process.env.ALLOWED_EMAILS || '')
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER = process.env.BREVO_SENDER;
+const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || '')
     .split(',')
     .map(e => e.trim().toLowerCase())
     .filter(Boolean);
 
 // ─── In-memory Stores ────────────────────────────
-const otpStore   = new Map();
+const otpStore = new Map();
 
 // ─── Auth Middleware ─────────────────────────────
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -116,7 +116,7 @@ app.post('/api/send-otp', async (req, res) => {
 // ─── Verify OTP ──────────────────────────────────
 app.post('/api/verify-otp', (req, res) => {
     const email = (req.body.email || '').toLowerCase().trim();
-    const otp   = (req.body.otp || '').trim();
+    const otp = (req.body.otp || '').trim();
 
     if (!email || !otp) return res.status(400).json({ error: 'Email and OTP required' });
 
@@ -194,10 +194,10 @@ app.post('/api/leads/notes', requireAuth, async (req, res) => {
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
         const sheets = google.sheets({ version: 'v4', auth });
-        
+
         await sheets.spreadsheets.values.update({
             spreadsheetId: SHEET_ID,
-            range: `Leads!T${sheetRow}`, // Column T is the 'Notes' column
+            range: `Leads!Q${sheetRow}`, // Column Q is the 'Notes' column
             valueInputOption: 'USER_ENTERED',
             requestBody: { values: [[notes || '']] }
         });

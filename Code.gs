@@ -11,7 +11,7 @@
 // GLOBAL CONFIGURATION
 // ═══════════════════════════════════════════════════════════
 
-var SHEET_ID = "1R7aOXVtMkhm6qgEeTV6HpOShGjWIaRL3ydHBEhujXuc";
+var SHEET_ID = "1VJtX69Wn4lDryad8L6NkpMylnlys_tPJqYn-b2Oa_aI";
 var SHEET_NAME = "Leads";
 var FILTERED_SHEET_NAME = "Filtered_Leads"; // ✅ NEW: Track rejected leads
 var LOG_SHEET_NAME = "Logs";
@@ -31,7 +31,7 @@ var CONFIG = {
   AI_MODEL: "mistral-large-latest",
   AI_TEMPERATURE: 0.1,
   LOG_TRUNCATE: 800,
-  ALLOWED_SENDERS: ["malikasaravanan774@11123792.brevosend.com"],
+  ALLOWED_SENDERS: ["vimalraj5207@gmail.com"],
   WIKIPEDIA_ENABLED: true,
   WIKIPEDIA_CACHE_HOURS: 24,
   WIKIPEDIA_SLEEP_MS: 200,
@@ -39,20 +39,18 @@ var CONFIG = {
   MAX_API_RETRIES: 10
 };
 
-// COLUMN INDICES (0-based) - 20 COLUMNS for Leads sheet
+// COLUMN INDICES (0-based) - 17 COLUMNS for Leads sheet
 var COL = {
   DATE: 0, COMPANY: 1, POSITION: 2, ROLE_SUMMARY: 3, COMPANY_BIO: 4,
   POSTED: 5, DOMAIN: 6, EMAIL: 7, LINKEDIN: 8, SCORE: 9,
-  DECISION_LINK: 10, WIKI_LINK: 11, MSG_ID: 12, FIT_REASON: 13, OUTREACH_MSG: 14,
-  SECTOR: 15, HQ: 16, EMPLOYEES: 17, OPEN_MAIL: 18, NOTES: 19
+  DECISION_LINK: 10, WIKI_LINK: 11, OPEN_MAIL: 12, MSG_ID: 13, FIT_REASON: 14, OUTREACH_MSG: 15, NOTES: 16
 };
 
-// HEADERS for Leads sheet (20 columns)
+// HEADERS for Leads sheet (17 columns)
 var HEADERS = [
   "Date", "Company", "Position", "Role Summary", "Company Bio", "Posted",
   "Domain", "Email", "LinkedIn", "Score", "Decision Maker Link",
-  "Wikipedia Link", "Message ID", "Fit Reason", "Outreach Msg", 
-  "Sector", "Headquarters", "Employee Size", "Open Mail", "Notes"
+  "Wikipedia Link", "Open Mail", "Message ID", "Fit Reason", "Outreach Msg", "Notes"
 ];
 
 // ✅ HEADERS for Filtered_Leads sheet (14 cols + Filter_Reason)
@@ -110,7 +108,7 @@ function initializeCRM() {
     var needsUpdate = true;
     if (sheet.getLastColumn() > 0 && sheet.getLastRow() > 0) {
       var currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[COL.NOTES] !== "Notes";
+      needsUpdate = currentHeaders.length < HEADERS.length || currentHeaders[currentHeaders.length - 1] !== "Notes";
     }
     if (needsUpdate) {
       sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
@@ -121,9 +119,6 @@ function initializeCRM() {
       sheet.autoResizeColumns(1, HEADERS.length);
       sheet.setColumnWidth(COL.FIT_REASON + 1, 320);
       sheet.setColumnWidth(COL.OUTREACH_MSG + 1, 400);
-      sheet.setColumnWidth(COL.SECTOR + 1, 150);
-      sheet.setColumnWidth(COL.HQ + 1, 200);
-      sheet.setColumnWidth(COL.EMPLOYEES + 1, 120);
       sheet.setColumnWidth(COL.OPEN_MAIL + 1, 150);
       sheet.setColumnWidth(COL.NOTES + 1, 300);
       var scoreRange = sheet.getRange(2, COL.SCORE + 1, 1000, 1);
@@ -150,8 +145,9 @@ function initializeCRM() {
         .setHorizontalAlignment("center");
       filteredSheet.setFrozenRows(1);
       filteredSheet.autoResizeColumns(1, FILTERED_HEADERS.length);
-      filteredSheet.setColumnWidth(16, 250); // Filter_Reason column
-      filteredSheet.setColumnWidth(17, 180); // Filtered_At column
+      filteredSheet.setColumnWidth(16, 150); // Open Mail column
+      filteredSheet.setColumnWidth(17, 250); // Filter_Reason column
+      filteredSheet.setColumnWidth(18, 180); // Filtered_At column
       log("INFO", "Filtered_Leads sheet headers created");
     }
     
@@ -275,11 +271,12 @@ function saveFilteredLead(lead, msgId, msgDate, filterReason) {
       lead.email || "",
       lead.linkedin || "",
       lead.score || "",
-      lead.decision_link || "",
-      lead.wikipedia || "",
+      lead.decision_link || "N/A",
+      lead.wikipedia || "N/A",
+      "https://mail.google.com/mail/u/0/#inbox/" + (msgId || ""),
       msgId || "",
-      lead.fit_reason || "",
-      lead.outreach_msg || "",
+      lead.fit_reason || "N/A",
+      lead.outreach_msg || "N/A",
       "", // ✅ Notes (Empty string for manual entry)
       filterReason, // ✅ WHY it was filtered
       Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") // ✅ When filtered
@@ -450,14 +447,14 @@ function fetchAndQualifyLeads() {
           
           // ✅ APPEND TO MAIN SHEET
           try {
-            var gmailLink = "https://mail.google.com/mail/u/0/#search/rfc822msgid%3A" + encodeURIComponent(msgId);
             var newRow = [
               msg.getDate(), l.company_name || "N/A", l.position || "N/A",
               l.role_summary || "N/A", l.company_bio || "N/A", l.posted_date || "",
               l.domain || "", l.email || "", l.linkedin || "", l.score || "",
-              l.decision_link || "", l.wikipedia || "", msgId, l.fit_reason || "",
-              l.outreach_msg || "", 
-              l.sector || "", l.hq || "", l.employees || "", gmailLink, "" // Notes
+              l.decision_link || "", l.wikipedia || "", 
+              "https://mail.google.com/mail/u/0/#inbox/" + msgId,
+              msgId, l.fit_reason || "N/A",
+              l.outreach_msg || "N/A", "" // Notes
             ];
             sheet.appendRow(newRow);
             SpreadsheetApp.flush();
@@ -622,17 +619,19 @@ function parseAIResponse(rawResponse, msgId) {
     var results = [];
     for (var i = 0; i < raw.length; i++) {
       var l = raw[i];
-      var company = l.company_name || l.Company || l.organization || "N/A";
-      var wikiResult = getCachedWikipediaResult(company);
-      if (!wikiResult && CONFIG.WIKIPEDIA_ENABLED) wikiResult = fetchWikipediaEnrichment(company, msgId);
-      
-      var wikiUrl = wikiResult?.wikiUrl || "";
-      var hq = wikiResult?.data?.firmographics?.headquarters || "";
-      var employees = wikiResult?.data?.firmographics?.employees || "";
-      var industry = wikiResult?.data?.firmographics?.industry || "";
-
+      var wikiUrl = (function() {
+        var company = l.company_name || l.Company || l.organization;
+        if (!company || company === "N/A") return "";
+        if (l.wikipedia && l.wikipedia.indexOf("wikipedia.org") !== -1) return l.wikipedia;
+        if (l.wiki_url && l.wiki_url.indexOf("wikipedia.org") !== -1) return l.wiki_url;
+        return getVerifiedWikipediaUrl(company, msgId);
+      })();
       var fitReason = (function() {
         var base = l.fit_reason || l.why_match || l.match_reason || "Score based on sector + R&D signals";
+        var company = l.company_name || l.Company || l.organization;
+        if (!company || company === "N/A") return base;
+        var wikiResult = getCachedWikipediaResult(company);
+        if (!wikiResult && CONFIG.WIKIPEDIA_ENABLED) wikiResult = fetchWikipediaEnrichment(company, msgId);
         if (wikiResult?.data?.firmographics) {
           var fg = wikiResult.data.firmographics, extras = [];
           if (fg.headquarters) extras.push("HQ: " + fg.headquarters);
@@ -654,11 +653,8 @@ function parseAIResponse(rawResponse, msgId) {
         score: typeof l.score === "number" ? l.score : (l.fit_score || l.relevance_score || ""),
         fit_reason: fitReason,
         outreach_msg: l.outreach_msg || l.outreach || "",
-        decision_link: l.decision_link || l.cto_link || buildLinkedIn(l.company_name) + "/people/" || "",
-        wikipedia: wikiUrl,
-        sector: industry || l.sector || "",
-        hq: hq || "",
-        employees: employees || ""
+        decision_link: l.decision_link || l.cto_link || buildDecisionLink(l.company_name) || "",
+        wikipedia: wikiUrl
       });
     }
     return results;

@@ -860,7 +860,8 @@
             if (!v) {
                 valHtml = '<span class="empty">—</span>';
             } else if (v.startsWith('http')) {
-                const label = v.length > 50 ? v.slice(0, 50) + '…' : v;
+                let label = v.length > 50 ? v.slice(0, 50) + '…' : v;
+                if (h === 'Open Mail') label = 'Open in Gmail';
                 valHtml = `<a href="${esc(v)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(label)}</a>`;
             } else if (h === 'Domain') {
                 const compName = lead['Company'] || v || 'Company';
