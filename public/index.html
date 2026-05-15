@@ -13,37 +13,39 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #06060f;
-            --bg-card: rgba(255,255,255,0.03);
-            --bg-card-hover: rgba(255,255,255,0.06);
-            --border: rgba(255,255,255,0.07);
-            --accent: #7c3aed;
-            --accent-light: #a78bfa;
-            --accent-glow: rgba(124,58,237,0.25);
+            --bg: #030308;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #8b5cf6;
+            --accent-light: #c4b5fd;
+            --accent-glow: rgba(139, 92, 246, 0.2);
             --blue: #3b82f6;
-            --green: #22c55e;
+            --green: #10b981;
             --amber: #f59e0b;
-            --text: #f1f1f4;
-            --text-dim: #6b6b80;
-            --text-mid: #9b9bb0;
-            --radius: 14px;
-            --nav-bg: rgba(6,6,15,0.85);
-            --modal-bg: #111122;
-            --th-bg: rgba(124,58,237,0.12);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --text-mid: #cbd5e1;
+            --radius: 18px;
+            --nav-bg: rgba(3, 3, 8, 0.8);
+            --modal-bg: #0a0a14;
+            --th-bg: rgba(139, 92, 246, 0.1);
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
         [data-theme="light"] {
-            --bg: #f4f6fa;
-            --bg-card: rgba(255,255,255,0.85);
-            --bg-card-hover: rgba(255,255,255,1);
-            --border: rgba(0,0,0,0.08);
-            --accent-glow: rgba(124,58,237,0.12);
-            --text: #1a1a2e;
-            --text-dim: #6b7280;
-            --text-mid: #4b5563;
-            --nav-bg: rgba(255,255,255,0.9);
+            --bg: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-card-hover: #ffffff;
+            --border: rgba(0, 0, 0, 0.06);
+            --accent-glow: rgba(139, 92, 246, 0.12);
+            --text: #0f172a;
+            --text-dim: #64748b;
+            --text-mid: #334155;
+            --nav-bg: rgba(255, 255, 255, 0.85);
             --modal-bg: #ffffff;
-            --th-bg: rgba(124,58,237,0.08);
+            --th-bg: rgba(139, 92, 246, 0.05);
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -464,33 +466,65 @@
         .modal-field-value a:hover { text-decoration: underline; }
         .modal-field-value .empty { color: var(--text-dim); font-style: italic; }
 
-        /* ── Mobile ──────────────────── */
-        @media (max-width: 768px) {
-            .navbar { padding: 12px 16px; }
-            .nav-right { gap: 8px; }
-            .btn-tool { padding: 7px 10px; }
-            .nav-brand { font-size: 15px; }
-            .nav-user { display: none !important; }
-            .container { padding: 16px; }
-            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card { padding: 14px; }
-            .stat-value { font-size: 22px; }
-            .filter-row { grid-template-columns: 1fr 1fr; }
-            .filter-row-2 { grid-template-columns: 1fr 1fr; }
-            .filter-panel { padding: 14px 16px; }
-            .fit-grid { grid-template-columns: 1fr; }
-            .modal-card { max-width: 100%; border-radius: 16px; }
-            .modal-header { padding: 16px 18px 14px; }
-            .modal-body { padding: 16px 18px 24px; }
-            .modal-score-num { font-size: 28px; }
+        /* ── Mobile List View ─────────── */
+        .mobile-list { display: none; flex-direction: column; gap: 12px; }
+        .lead-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            transition: transform .2s, border-color .2s;
+            cursor: pointer;
         }
+        .lead-card:active { transform: scale(0.98); }
+        .lead-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .lead-card-title { font-weight: 700; font-size: 15px; color: var(--text); }
+        .lead-card-pos { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+        .lead-card-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+        .lead-card-tag { 
+            font-size: 11px; font-weight: 600; padding: 4px 8px; 
+            border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-mid);
+        }
+        .lead-card-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .btn-card-action {
+            flex: 1; padding: 10px; border-radius: 10px;
+            background: rgba(139, 92, 246, 0.1); color: var(--accent-light);
+            font-size: 12px; font-weight: 600; text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.2); text-decoration: none;
+        }
+
+        /* ── Mobile Bottom Nav ────────── */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--nav-bg); backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            display: none; justify-content: space-around;
+            padding: 8px 0 24px; z-index: 100;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: var(--text-dim); font-size: 10px; font-weight: 600;
+            cursor: pointer; transition: color .2s;
+        }
+        .nav-item.active { color: var(--accent-light); }
+        .nav-item i { font-size: 20px; }
+
+        /* ── Tablet/Mobile Adjustments ── */
+        @media (max-width: 1023px) {
+            .table-card { display: none !important; }
+            .mobile-list { display: flex; }
+            .navbar { padding: 12px 20px; }
+            .container { padding: 16px 16px 100px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .filter-row { grid-template-columns: 1fr; }
+            .bottom-nav { display: flex; }
+            .nav-tool-text { display: none; }
+        }
+
         @media (max-width: 480px) {
-            .filter-row, .filter-row-2 { grid-template-columns: 1fr; }
-            .score-range-wrap { justify-content: stretch; }
-            .score-range-wrap input[type=number] { flex: 1; }
-        }
-        @media (min-width: 769px) {
-            .nav-user { display: block; }
+            .stats-row { grid-template-columns: 1fr; }
+            .nav-brand span { display: none; }
         }
     </style>
 </head>
@@ -498,136 +532,91 @@
     <nav class="navbar">
         <div class="nav-brand">
             <div class="nav-brand-icon"><i class="bi bi-radar"></i></div>
-            <span>Spirelia Intelligence</span>
+            <span>Spirelia Intel</span>
         </div>
         <div class="nav-right">
-            <a href="https://mailmeteor.com/tools/reverse-email-lookup" target="_blank" class="btn-tool" title="Reverse Email Lookup">
-                <i class="bi bi-search"></i> <span class="nav-tool-text">Reverse Lookup</span>
-            </a>
-            <a href="https://mailmeteor.com/tools/linkedin-email-finder" target="_blank" class="btn-tool" title="LinkedIn Email Finder">
-                <i class="bi bi-envelope-plus"></i> <span class="nav-tool-text">Email Finder</span>
-            </a>
             <span class="nav-badge" id="leadCount">—</span>
-            <span class="nav-user" id="userEmail"></span>
             <button class="btn-theme" id="themeToggle" title="Toggle theme"><i class="bi bi-moon-stars-fill"></i></button>
-            <button class="btn-logout" id="logoutBtn" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            <button class="btn-logout" id="logoutBtn" onclick="logout()"><i class="bi bi-box-arrow-right"></i></button>
         </div>
     </nav>
 
     <div class="container">
-        <!-- Stats -->
-        <div class="stats-row hidden" id="statsRow">
-            <div class="stat-card"><div class="stat-label"><i class="bi bi-people"></i> Total Leads</div><div class="stat-value purple" id="statTotal">0</div></div>
-            <div class="stat-card"><div class="stat-label"><i class="bi bi-graph-up-arrow"></i> Avg Score</div><div class="stat-value blue" id="statAvg">—</div></div>
-            <div class="stat-card"><div class="stat-label"><i class="bi bi-trophy"></i> Top Score</div><div class="stat-value green" id="statTop">—</div></div>
-            <div class="stat-card"><div class="stat-label"><i class="bi bi-buildings"></i> Companies</div><div class="stat-value amber" id="statCompanies">0</div></div>
+        <!-- Stats Section -->
+        <div id="section-stats" class="section">
+            <div class="stats-row hidden" id="statsRow">
+                <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-value purple" id="statTotal">0</div></div>
+                <div class="stat-card"><div class="stat-label">Avg Score</div><div class="stat-value blue" id="statAvg">—</div></div>
+                <div class="stat-card"><div class="stat-label">Top Score</div><div class="stat-value green" id="statTop">—</div></div>
+                <div class="stat-card"><div class="stat-label">Companies</div><div class="stat-value amber" id="statCompanies">0</div></div>
+            </div>
         </div>
 
-        <!-- Filters -->
-        <div class="filter-panel hidden" id="filterBar">
-            <!-- Row 1: Search + Score + Sector + Reset -->
-            <div class="filter-row">
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-search"></i> Global Search</div>
-                    <input type="text" id="searchBox" placeholder="Company, position, keyword…">
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-speedometer2"></i> Score Range</div>
-                    <div class="score-range-wrap">
+        <!-- Filter Section -->
+        <div id="section-filters" class="section hidden">
+            <div class="filter-panel" id="filterBar">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-search"></i> Search</div>
+                        <input type="text" id="searchBox" placeholder="Company, position...">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-speedometer2"></i> Min Score</div>
                         <input type="number" id="scoreMin" min="0" max="100" placeholder="0">
-                        <span class="score-range-sep">to</span>
-                        <input type="number" id="scoreMax" min="0" max="100" placeholder="100">
                     </div>
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-building"></i> Sector</div>
-                    <select id="sectorFilter">
-                        <option value="">All Sectors</option>
-                        <option value="auto">Automotive</option>
-                        <option value="pharma">Pharma / MedTech</option>
-                        <option value="aero">Aerospace</option>
-                        <option value="manufacturing">Manufacturing</option>
-                        <option value="gcc">GCC / R&D Center</option>
-                        <option value="agri">Agriculture</option>
-                        <option value="tech">Technology</option>
-                    </select>
-                </div>
-                <div style="display:flex; gap:8px; align-self: end;">
-                    <button class="btn-apply" id="todayLeadsBtn" style="background:var(--blue);"><i class="bi bi-calendar-day"></i> Today</button>
-                    <button class="btn-reset" id="resetBtn" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-apply" id="todayLeadsBtn">Today</button>
+                        <button class="btn-reset" id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    </div>
                 </div>
             </div>
-
-            <!-- Toggle to show advanced -->
-            <button class="btn-toggle-adv" id="toggleAdv"><i class="bi bi-sliders"></i> Advanced Filters</button>
-
-            <!-- Row 2: Position + Contact + Fit Reason + Date -->
-            <div class="filter-row-2 adv-hidden" id="advRow">
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-person-badge"></i> Position</div>
-                    <select id="positionFilter">
-                        <option value="">All Positions</option>
-                        <option value="vp">VP / Vice President</option>
-                        <option value="director">Director</option>
-                        <option value="head">Head / Lead</option>
-                        <option value="manager">Manager</option>
-                        <option value="cto">CTO / CXO</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-person-check"></i> Has Contact</div>
-                    <div class="toggle-wrap">
-                        <div class="toggle-switch" id="contactToggle"></div>
-                        <span class="toggle-text">Email or LinkedIn</span>
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-lightbulb"></i> Fit Reason</div>
-                    <input type="text" id="fitSearch" placeholder="patent, R&D, innovation…">
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-calendar-range"></i> Date Range</div>
-                    <div class="score-range-wrap">
-                        <input type="date" id="dateFrom" style="padding:10px 4px" title="From Date">
-                        <span class="score-range-sep">to</span>
-                        <input type="date" id="dateTo" style="padding:10px 4px" title="To Date">
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="bi bi-journal-text"></i> Notes</div>
-                    <input type="text" id="notesSearch" list="notesDatalist" placeholder="Search saved notes…">
-                    <datalist id="notesDatalist"></datalist>
-                </div>
-            </div>
-
-            <div class="filter-count" id="filterCount"></div>
         </div>
 
-        <!-- Loader -->
-        <div id="loader" class="loader">
-            <div class="loader-ring"></div>
-            <p>Loading intelligence data…</p>
-        </div>
-
-        <!-- Error -->
-        <div id="errorBox" class="error-box"></div>
-
-        <!-- Table -->
-        <div class="table-card hidden" id="tableCard">
-            <div class="table-wrap">
-                <table>
-                    <thead id="tableHead"></thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
+        <!-- Main Content -->
+        <div id="section-leads" class="section">
+            <div id="loader" class="loader">
+                <div class="loader-ring"></div>
+                <p>Syncing Intelligence...</p>
             </div>
+
+            <div id="errorBox" class="error-box"></div>
+
+            <!-- Desktop Table -->
+            <div class="table-card hidden" id="tableCard">
+                <div class="table-wrap">
+                    <table>
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mobile List -->
+            <div class="mobile-list" id="mobileList"></div>
         </div>
 
         <!-- Fit Reasons -->
         <div class="fit-section hidden" id="fitSection">
-            <h2><i class="bi bi-lightbulb"></i> Fit Reason Highlights</h2>
+            <h2><i class="bi bi-lightbulb"></i> Fit Highlights</h2>
             <div class="fit-grid" id="fitGrid"></div>
         </div>
     </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="showSection('leads', this)">
+            <i class="bi bi-grid-fill"></i>
+            <span>Leads</span>
+        </div>
+        <div class="nav-item" onclick="showSection('stats', this)">
+            <i class="bi bi-graph-up"></i>
+            <span>Stats</span>
+        </div>
+        <div class="nav-item" onclick="showSection('filters', this)">
+            <i class="bi bi-filter-circle"></i>
+            <span>Filter</span>
+        </div>
+    </nav>
 
     <!-- Lead Detail Modal -->
     <div class="modal-overlay" id="modalOverlay">
@@ -697,16 +686,16 @@
                 throw new Error(e.error || 'Server error');
             }
 
-            const data = await res.json();
             allHeaders = Array.isArray(data.headers) ? data.headers : [];
             allLeads   = Array.isArray(data.leads)   ? data.leads   : [];
 
             if (allHeaders.length === 0) throw new Error('No data found in sheet.');
 
-            leadCount.textContent = allLeads.length + ' leads';
+            leadCount.textContent = allLeads.length;
 
             computeStats();
             renderTable(allHeaders, allLeads);
+            renderMobileList(allLeads);
             renderFit(allLeads);
             updateNotesDatalist();
 
@@ -719,8 +708,60 @@
             loader.classList.add('hidden');
             errorBox.style.display = 'block';
             errorBox.textContent = '⚠ ' + err.message;
-            leadCount.textContent = '0 leads';
+            leadCount.textContent = '0';
         }
+    }
+
+    // ─── Mobile List Renderer ────────────────────
+    function renderMobileList(leads) {
+        const list = $('mobileList');
+        if (!list) return;
+        
+        list.innerHTML = leads.map((lead, idx) => {
+            const score = parseInt(lead['Score']);
+            const sClass = score >= 90 ? 'score-high' : score >= 70 ? 'score-mid' : 'score-low';
+            const company = lead['Company'] || 'Unknown';
+            const position = lead['Position'] || 'Unknown';
+            const mailLink = lead['Open Mail'] || '';
+            
+            return `
+            <div class="lead-card" onclick="openLeadModal(${idx})">
+                <div class="lead-card-header">
+                    <div>
+                        <div class="lead-card-title">${esc(company)}</div>
+                        <div class="lead-card-pos">${esc(position)}</div>
+                    </div>
+                    <div class="score-badge ${sClass}">${score || '—'}</div>
+                </div>
+                <div class="lead-card-meta">
+                    <span class="lead-card-tag"><i class="bi bi-calendar3"></i> ${esc(lead['Date'] || '')}</span>
+                    ${lead['Domain'] ? `<span class="lead-card-tag"><i class="bi bi-globe"></i> Website</span>` : ''}
+                </div>
+                <div class="lead-card-actions">
+                    ${mailLink ? `<a href="${esc(mailLink)}" target="_blank" class="btn-card-action" onclick="event.stopPropagation()"><i class="bi bi-envelope-open"></i> View Mail</a>` : ''}
+                    <button class="btn-card-action" style="background:rgba(255,255,255,0.05); color:var(--text); border-color:var(--border);">Details</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ─── Section Toggler ─────────────────────────
+    function showSection(name, navEl) {
+        document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        if (name === 'leads') {
+            $('section-leads').classList.remove('hidden');
+            statsRow.classList.remove('hidden');
+        } else if (name === 'stats') {
+            $('section-stats').classList.remove('hidden');
+            statsRow.classList.remove('hidden');
+        } else if (name === 'filters') {
+            $('section-filters').classList.remove('hidden');
+        }
+        
+        if (navEl) navEl.classList.add('active');
+        window.scrollTo(0, 0);
     }
 
     // ─── Stats ────────────────────────────────────
@@ -1169,6 +1210,7 @@
         if (nk) f = f.filter(l => (l['Notes']||'').toLowerCase().includes(nk));
 
         renderTable(allHeaders, f);
+        renderMobileList(f);
         const active = [q, !isNaN(sMin), !isNaN(sMax), sec, pos, contactOnly, fk, df, dt, nk].filter(Boolean).length;
         filterCount.textContent = active ? `${f.length} lead${f.length!==1?'s':''} matching ${active} filter${active!==1?'s':''}` : '';
     }
