@@ -652,13 +652,12 @@ function parseAIResponse(rawResponse, msgId) {
         domain: l.domain || l.website || extractDomain(l.company_name) || "",
         email: l.email || l.contact_email || guessEmail(l.domain) || "",
         linkedin: l.linkedin || l.linkedin_url || buildLinkedIn(l.company_name) || "",
-        score: typeof l.score === "number" ? l.score : (l.fit_score || l.relevance_score || ""),
         fit_reason: fitReason,
         outreach_msg: l.outreach_msg || l.outreach || "",
-        decision_link: l.decision_link || l.cto_link || buildDecisionLink(l.company_name) || "",
+        decision_link: (l.decision_link || l.cto_link || buildDecisionLink(l.company_name) || "").trim(),
         wikipedia: wikiUrl,
-        job_link: l.job_link || buildGoogleJobSearchLink(l.company_name, l.position),
-        source: l.source || "Google"
+        job_link: (l.job_link || buildGoogleJobSearchLink(l.company_name, l.position)).trim(),
+        source: (l.source || "Google").trim()
       });
     }
     return results;
@@ -791,5 +790,6 @@ function buildDecisionLink(companyName) {
 function buildGoogleJobSearchLink(companyName, position) {
   if (!companyName || companyName === "N/A") return "";
   var query = (companyName + " " + (position || "") + " job").trim();
-  return "https://www.google.com/search?q=" + encodeURIComponent(query);
+  // Using '+' for spaces as it's more compatible with Google Search parameters
+  return "https://www.google.com/search?q=" + encodeURIComponent(query).replace(/%20/g, "+");
 }

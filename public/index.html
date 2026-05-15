@@ -743,8 +743,8 @@
                 let v = lead[h] || '';
                 if (h === 'Domain') {
                     const compName = lead['Company'] || v || 'Company';
-                    const searchQuery = compName + " linkedin and official website and contact";
-                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+                    const searchQuery = (compName + " linkedin and official website and contact").trim();
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery).replace(/%20/g, '+')}`;
                     return `<td><a href="${searchUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="bi bi-google"></i> Google Search</a></td>`;
                 }
                 if (h === 'Score' && v) {
@@ -853,8 +853,8 @@
                 valHtml = `<a href="${esc(v)}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" style="margin-right:4px"></i>${esc(label)}</a>`;
             } else if (h === 'Domain') {
                 const compName = lead['Company'] || v || 'Company';
-                const searchQuery = compName + " linkedin website contact";
-                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+                const searchQuery = (compName + " linkedin website contact").trim();
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery).replace(/%20/g, '+')}`;
                 valHtml = `<a href="${searchUrl}" target="_blank" rel="noopener"><i class="bi bi-google" style="margin-right:4px"></i>Search for ${esc(compName)}</a>`;
             } else if (h === 'Outreach Msg') {
                 valHtml = `<div style="background:rgba(124,58,237,0.05); padding:12px; border-radius:8px; border:1px solid rgba(124,58,237,0.1); white-space:pre-wrap; font-family:monospace; font-size:12px; position:relative;">
