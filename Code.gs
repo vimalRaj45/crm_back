@@ -6,6 +6,7 @@
 // 14-column CRM, Smart Dedup, AI Logging, fit_reason
 // Rate Limit Wait: 24s base (for Google Workspace 30-min limit)
 // CONFIG UPDATED: MAX_SEARCH_THREADS=500, MAX_PROCESS_MESSAGES=15
+// ✅ FIXED: Open Mail link uses Thread ID format: #inbox/{threadId}
 
 // ═══════════════════════════════════════════════════════════
 // GLOBAL CONFIGURATION
@@ -13,13 +14,13 @@
 
 var SHEET_ID = "1VJtX69Wn4lDryad8L6NkpMylnlys_tPJqYn-b2Oa_aI";
 var SHEET_NAME = "Leads";
-var FILTERED_SHEET_NAME = "Filtered_Leads"; // ✅ NEW: Track rejected leads
+var FILTERED_SHEET_NAME = "Filtered_Leads";
 var LOG_SHEET_NAME = "Logs";
 var LOG_PREFIX = "[CRM-V2]";
 
 var CONFIG = {
-  MAX_SEARCH_THREADS: 500,   // ✅ Scans up to 500 threads to find valid messages
-  MAX_PROCESS_MESSAGES: 15,  // ✅ Stops after processing exactly 15 emails per run
+  MAX_SEARCH_THREADS: 500,
+  MAX_PROCESS_MESSAGES: 15,
   SLEEP_MS: 2500,
   NOISE_KEYWORDS: [
     "tcs", "infosys", "wipro", "hcl", "cognizant", "accenture", 
@@ -101,7 +102,6 @@ function initializeCRM() {
   try {
     var ss = SpreadsheetApp.openById(SHEET_ID);
     
-    // ✅ Initialize MAIN Leads sheet
     var sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
     
@@ -127,7 +127,6 @@ function initializeCRM() {
       log("INFO", "Leads sheet headers updated");
     }
     
-    // ✅ Initialize FILTERED_Leads sheet (NEW)
     var filteredSheet = ss.getSheetByName(FILTERED_SHEET_NAME);
     if (!filteredSheet) {
       filteredSheet = ss.insertSheet(FILTERED_SHEET_NAME);
@@ -145,13 +144,12 @@ function initializeCRM() {
         .setHorizontalAlignment("center");
       filteredSheet.setFrozenRows(1);
       filteredSheet.autoResizeColumns(1, FILTERED_HEADERS.length);
-      filteredSheet.setColumnWidth(16, 150); // Open Mail column
-      filteredSheet.setColumnWidth(17, 250); // Filter_Reason column
-      filteredSheet.setColumnWidth(18, 180); // Filtered_At column
+      filteredSheet.setColumnWidth(16, 150);
+      filteredSheet.setColumnWidth(17, 250);
+      filteredSheet.setColumnWidth(18, 180);
       log("INFO", "Filtered_Leads sheet headers created");
     }
     
-    // ✅ Initialize Logs sheet
     var logSheet = ss.getSheetByName(LOG_SHEET_NAME);
     if (!logSheet) {
       logSheet = ss.insertSheet(LOG_SHEET_NAME);
@@ -254,11 +252,14 @@ function log(level, message, data) {
 // ✅ HELPER: Save filtered lead to audit sheet
 // ═══════════════════════════════════════════════════════════
 
-function saveFilteredLead(lead, msgId, msgDate, filterReason) {
+function saveFilteredLead(lead, msgId, threadId, msgDate, filterReason) {
   try {
     var ss = SpreadsheetApp.openById(SHEET_ID);
     var sheet = ss.getSheetByName(FILTERED_SHEET_NAME);
-    if (!sheet) return; // Sheet not initialized yet
+    if (!sheet) return;
+    
+    // ✅ FIXED: Uses Thread ID format like your example
+    var openMailLink = "https://mail.google.com/mail/u/0/#inbox/" + (threadId || "");
     
     var row = [
       msgDate || new Date(),
@@ -273,13 +274,13 @@ function saveFilteredLead(lead, msgId, msgDate, filterReason) {
       lead.score || "",
       lead.decision_link || "N/A",
       lead.wikipedia || "N/A",
-      "https://mail.google.com/mail/u/0/#inbox/" + (msgId || ""),
+      openMailLink,  // ✅ Thread ID link
       msgId || "",
       lead.fit_reason || "N/A",
       lead.outreach_msg || "N/A",
-      "", // ✅ Notes (Empty string for manual entry)
-      filterReason, // ✅ WHY it was filtered
-      Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss") // ✅ When filtered
+      "",
+      filterReason,
+      Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")
     ];
     sheet.appendRow(row);
     SpreadsheetApp.flush();
@@ -315,7 +316,7 @@ function isValidLead(l) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// MAIN FUNCTION: Fetch & Qualify Leads (WITH FILTERED TRACKING)
+// MAIN FUNCTION: Fetch & Qualify Leads
 // ═══════════════════════════════════════════════════════════
 
 function fetchAndQualifyLeads() {
@@ -356,6 +357,7 @@ function fetchAndQualifyLeads() {
         
         var msg = messages[m];
         var msgId = msg.getId();
+        var threadId = msg.getThread().getId(); // ✅ Get Thread ID for Open Mail link
         var subject = msg.getSubject() ? msg.getSubject().slice(0, 80) : "No Subject";
         var sender = msg.getFrom();
         
@@ -393,16 +395,14 @@ function fetchAndQualifyLeads() {
         for (var idx = 0; idx < leads.length; idx++) {
           var l = leads[idx];
           
-          // ✅ VALIDATION: Incomplete data
           if (!isValidLead(l)) {
-            saveFilteredLead(l, msgId, msg.getDate(), "Incomplete data (N/A fields)");
+            saveFilteredLead(l, msgId, threadId, msg.getDate(), "Incomplete data (N/A fields)");
             stats.leadsFiltered++;
             continue;
           }
           
           var company = (l.company_name || "").toLowerCase();
           
-          // ✅ NOISE KEYWORD FILTER
           var matchedNoise = null;
           for (var k = 0; k < CONFIG.NOISE_KEYWORDS.length; k++) {
             if (company.indexOf(CONFIG.NOISE_KEYWORDS[k]) !== -1) {
@@ -411,20 +411,18 @@ function fetchAndQualifyLeads() {
             }
           }
           if (matchedNoise) {
-            saveFilteredLead(l, msgId, msg.getDate(), "Noise keyword: " + matchedNoise);
+            saveFilteredLead(l, msgId, threadId, msg.getDate(), "Noise keyword: " + matchedNoise);
             stats.leadsFiltered++;
             continue;
           }
           
-          // ✅ SIGNATURE DEDUP
           var signature = buildLeadSignature(l.company_name, l.position, l.role_summary);
           if (signature && existingSignatures.has(signature)) {
-            saveFilteredLead(l, msgId, msg.getDate(), "Duplicate signature");
+            saveFilteredLead(l, msgId, threadId, msg.getDate(), "Duplicate signature");
             stats.duplicatesSkipped++;
             continue;
           }
           
-          // ✅ PRE-APPEND DEDUP (scan last 500 rows)
           var isDuplicate = false;
           var lastRow = sheet.getLastRow();
           if (lastRow > 1) {
@@ -437,7 +435,7 @@ function fetchAndQualifyLeads() {
               if (rMsgId === msgId) continue;
               if (rc === company && (rp.indexOf((l.position||"").toLowerCase().slice(0,30)) !== -1 || (l.position||"").toLowerCase().slice(0,30).indexOf(rp) !== -1)) {
                 isDuplicate = true;
-                saveFilteredLead(l, msgId, msg.getDate(), "Duplicate in recent rows");
+                saveFilteredLead(l, msgId, threadId, msg.getDate(), "Duplicate in recent rows");
                 stats.duplicatesSkipped++;
                 break;
               }
@@ -445,16 +443,18 @@ function fetchAndQualifyLeads() {
           }
           if (isDuplicate) { existingMsgIds.push(msgId); continue; }
           
-          // ✅ APPEND TO MAIN SHEET
           try {
+            // ✅ FIXED: Uses Thread ID format like your example
+            var openMailLink = "https://mail.google.com/mail/u/0/#inbox/" + threadId;
+            
             var newRow = [
               msg.getDate(), l.company_name || "N/A", l.position || "N/A",
               l.role_summary || "N/A", l.company_bio || "N/A", l.posted_date || "",
               l.domain || "", l.email || "", l.linkedin || "", l.score || "",
               l.decision_link || "", l.wikipedia || "", 
-              "https://mail.google.com/mail/u/0/#inbox/" + msgId,
+              openMailLink,  // ✅ Thread ID link
               msgId, l.fit_reason || "N/A",
-              l.outreach_msg || "N/A", "" // Notes
+              l.outreach_msg || "N/A", ""
             ];
             sheet.appendRow(newRow);
             SpreadsheetApp.flush();
@@ -483,7 +483,7 @@ function fetchAndQualifyLeads() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Signature Builder & Quick Fingerprint (UNCHANGED)
+// Signature Builder & Quick Fingerprint
 // ═══════════════════════════════════════════════════════════
 
 function buildLeadSignature(company, position, roleSummary) {
@@ -530,9 +530,7 @@ function generateQuickSignature(bodyPreview, subject) {
 function sanitizeEmailBody(body) {
   if (!body) return body;
   return body
-    // Remove email addresses
     .replace(/[\w.-]+@[\w.-]+\.\w+/g, "[EMAIL]")
-    // Remove phone numbers only
     .replace(/\+?\d[\d\s\-\(\)]{8,}/g, "[PHONE]");
 }
 
@@ -562,7 +560,6 @@ function callMistralAI(emailBody, msgId) {
       var code = res.getResponseCode();
       if (code === 200) return parseAIResponse(res.getContentText(), msgId);
       if (code === 429) {
-        // ✅ CHANGED: Base wait increased from 3 → 8 seconds (for Workspace 30-min limit)
         var wait = res.getHeaders()["Retry-After"] || Math.pow(2, retry) * 20;
         log("WARN", "Rate limited. Waiting " + wait + "s");
         Utilities.sleep(wait * 1000);
@@ -665,7 +662,7 @@ function parseAIResponse(rawResponse, msgId) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🏛️ WIKIPEDIA ENRICHMENT (FIXED)
+// 🏛️ WIKIPEDIA ENRICHMENT
 // ═══════════════════════════════════════════════════════════
 
 function getVerifiedWikipediaUrl(companyName, msgId) {
