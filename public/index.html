@@ -554,7 +554,7 @@
         </div>
 
         <!-- Filter Section -->
-        <div id="section-filters" class="section hidden">
+        <div id="section-filters" class="section">
             <div class="filter-panel" id="filterBar">
                 <div class="filter-row">
                     <div class="filter-group">
@@ -665,17 +665,17 @@
 
     <!-- Bottom Nav -->
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="showSection('leads', this)">
-            <i class="bi bi-grid-fill"></i>
-            <span>Leads</span>
-        </div>
-        <div class="nav-item" onclick="showSection('stats', this)">
+        <div class="nav-item active" onclick="scrollToSection('stats', this)">
             <i class="bi bi-graph-up"></i>
             <span>Stats</span>
         </div>
-        <div class="nav-item" onclick="showSection('filters', this)">
+        <div class="nav-item" onclick="scrollToSection('filters', this)">
             <i class="bi bi-filter-circle"></i>
             <span>Filter</span>
+        </div>
+        <div class="nav-item" onclick="scrollToSection('leads', this)">
+            <i class="bi bi-grid-fill"></i>
+            <span>Leads</span>
         </div>
     </nav>
 
@@ -766,6 +766,7 @@
             filterBar.classList.remove('hidden');
             tableCard.classList.remove('hidden');
             fitSection.classList.remove('hidden');
+            $('section-filters').classList.remove('hidden');
         } catch (err) {
             loader.classList.add('hidden');
             errorBox.style.display = 'block';
@@ -810,23 +811,17 @@
         }).join('');
     }
 
-    // ─── Section Toggler ─────────────────────────
-    function showSection(name, navEl) {
-        document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        
-        if (name === 'leads') {
-            $('section-leads').classList.remove('hidden');
-            statsRow.classList.remove('hidden');
-        } else if (name === 'stats') {
-            $('section-stats').classList.remove('hidden');
-            statsRow.classList.remove('hidden');
-        } else if (name === 'filters') {
-            $('section-filters').classList.remove('hidden');
+    // ─── Section Scroller (Unified View) ────────
+    function scrollToSection(name, navEl) {
+        const target = $('section-' + name);
+        if (target) {
+            const navHeight = document.querySelector('.navbar').offsetHeight + 20;
+            const top = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+            window.scrollTo({ top, behavior: 'smooth' });
         }
         
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         if (navEl) navEl.classList.add('active');
-        window.scrollTo(0, 0);
     }
 
     // ─── Stats ────────────────────────────────────
@@ -1322,3 +1317,4 @@
 </script>
 </body>
 </html>
+
