@@ -535,6 +535,7 @@
             <span>Spirelia Intel</span>
         </div>
         <div class="nav-right">
+            <span class="nav-email" id="userEmail" style="font-size: 13px; color: var(--text-dim); margin-right: 12px; font-weight: 500;"></span>
             <span class="nav-badge" id="leadCount">—</span>
             <button class="btn-theme" id="themeToggle" title="Toggle theme"><i class="bi bi-moon-stars-fill"></i></button>
             <button class="btn-logout" id="logoutBtn" onclick="logout()"><i class="bi bi-box-arrow-right"></i></button>
@@ -561,12 +562,72 @@
                         <input type="text" id="searchBox" placeholder="Company, position...">
                     </div>
                     <div class="filter-group">
-                        <div class="filter-label"><i class="bi bi-speedometer2"></i> Min Score</div>
-                        <input type="number" id="scoreMin" min="0" max="100" placeholder="0">
+                        <div class="filter-label"><i class="bi bi-speedometer2"></i> Score Range</div>
+                        <div class="score-range-wrap">
+                            <input type="number" id="scoreMin" min="0" max="100" placeholder="Min">
+                            <span class="score-range-sep">to</span>
+                            <input type="number" id="scoreMax" min="0" max="100" placeholder="Max">
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-tags"></i> Sector</div>
+                        <select id="sectorFilter">
+                            <option value="">All Sectors</option>
+                            <option value="tech">Technology / AI</option>
+                            <option value="pharma">Pharma / Biotech</option>
+                            <option value="auto">Automotive / EV</option>
+                            <option value="aero">Aerospace / Defense</option>
+                            <option value="manufacturing">Industrial / Mfg</option>
+                            <option value="gcc">GCC / R&D Centers</option>
+                            <option value="agri">Agriculture / AgriTech</option>
+                        </select>
                     </div>
                     <div style="display:flex; gap:8px;">
                         <button class="btn-apply" id="todayLeadsBtn">Today</button>
                         <button class="btn-reset" id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    </div>
+                </div>
+
+                <button class="btn-toggle-adv" id="toggleAdv">
+                    <i class="bi bi-sliders"></i> Advanced Filters
+                </button>
+
+                <div class="filter-row-2 adv-hidden" id="advRow">
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-person-badge"></i> Position</div>
+                        <select id="positionFilter">
+                            <option value="">All Levels</option>
+                            <option value="vp">VP / Exec</option>
+                            <option value="director">Director</option>
+                            <option value="head">Head / Lead</option>
+                            <option value="manager">Manager</option>
+                            <option value="cto">C-Level / Chief</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-lightbulb"></i> Fit Keyword</div>
+                        <input type="text" id="fitSearch" placeholder="e.g. cloud">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-calendar3"></i> Date From</div>
+                        <input type="date" id="dateFrom">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-calendar3"></i> Date To</div>
+                        <input type="date" id="dateTo">
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label"><i class="bi bi-chat-dots"></i> Notes</div>
+                        <input type="text" id="notesSearch" placeholder="Search notes..." list="notesDatalist">
+                        <datalist id="notesDatalist"></datalist>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div id="filterCount" class="filter-count"></div>
+                    <div class="toggle-wrap">
+                        <div class="toggle-switch" id="contactToggle"></div>
+                        <span class="toggle-text">Contact Only (Email/LinkedIn)</span>
                     </div>
                 </div>
             </div>
@@ -686,6 +747,7 @@
                 throw new Error(e.error || 'Server error');
             }
 
+            const data = await res.json();
             allHeaders = Array.isArray(data.headers) ? data.headers : [];
             allLeads   = Array.isArray(data.leads)   ? data.leads   : [];
 
